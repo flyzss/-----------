@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>坦克大战-逐像素版</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body>
+    <div id="candiv">
+        <div id="msg">
+            <p id="pass">第0关</p>
+            <div id="player1">
+                <span class="hp">0</span>
+                <span class="sspeed">射速</span>
+                <span class="shootFar">射程</span>
+                <span class="moveSpeed">移速</span>
+                <span class="baojishang">暴击</span>
+                <span class="baojilv">暴击</span>
+                <span class="xixie">吸血率</span>
+                <span class="sh">伤害</span>
+                <span class="score">得分:0</span>
+            </div>
+            <div id="player2">
+                <span class="hp">0</span>
+                <span class="sspeed">射速</span>
+                <span class="shootFar">射程</span>
+                <span class="moveSpeed">移速</span>
+                <span class="baojishang">暴击</span>
+                <span class="baojilv">暴击</span>
+                <span class="xixie">吸血率</span>
+                <span class="sh">伤害</span>
+                <span class="score">得分:0</span>
+            </div>
+        </div>
+        <canvas id="can"></canvas>
+        <div>
+            <button id="start">重开</button>
+            <button id="pause">暂停</button>
+            <button id="btn_shop">商店</button>
+            <select id="playercount">
+                 <option value="1">单人</option>
+                 <option value="2">双人</option>
+             </select>
+        </div>
+    </div>
+    <div id="shop">
+        <ul class="item-list">
+        </ul>
+        <fieldset class="gwc" id="p1gwc">
+            <legend>P1购物车</legend>
+            <ul></ul>
+            <p class="zj">总计:0</p>
+        </fieldset>
+        <fieldset class="gwc" id="p2gwc">
+            <legend>P2购物车</legend>
+            <ul></ul>
+            <p class="zj">总计:0</p>
+        </fieldset>
+        <div class="buttong">
+            <button id="btn_shop_buy">确定</button><button id="btn_shop_cancel">取消</button>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="main.js"></script>
+
+</html>

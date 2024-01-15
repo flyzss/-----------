@@ -266,6 +266,7 @@ class FOOD {
         },1000);
     }
     loop(){
+        if(glb.pause)return;
         this.timeout--;
         this.dieTimeout--;
         if(this.timeout<=0){

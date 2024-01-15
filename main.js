@@ -248,7 +248,7 @@ class BOOM {
 }
 class FOOD {
     constructor(obj) {
-        console.log(obj.act);
+        //console.log(obj.act);
         this.type = glb.types.food;
         this.xy = obj.xy;
         this.id=obj.id||Math.random();

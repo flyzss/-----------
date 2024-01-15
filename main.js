@@ -254,6 +254,7 @@ class FOOD {
         this.id=obj.id||Math.random();
         this.width = obj.width || 40;
         this.height = obj.height || 40;
+        this._size = { width: this.width, height: this.height };
         this.act = obj.act;
         this.who = obj.who;
         this.actstr = FOOD.list.map(item => item.singleStr);
@@ -269,9 +270,9 @@ class FOOD {
         if(glb.pause)return;
         this.timeout--;
         this.dieTimeout--;
-        if(this.timeout<=0){
+        if(this.timeout<=0&&this.who!=null){
             this.who=null;//30后归属权清空
-            this.dieTimeout=60;
+            this.dieTimeout=60;//60后消失
         }
         if(this.dieTimeout<=0){//60后消失
             this.die();
@@ -299,6 +300,10 @@ class FOOD {
         return FOOD.list[id];
     }
     drawme() {
+        if(this.dieTimeout<30){
+            let {width,height}=this._size;
+            [this.width, this.height] = [this.dieTimeout%2===0 ? width : width *1.1, this.dieTimeout%2===0 ? height : height*1.1];
+        }
         let { x, y } = this.xy;
         glb.context.drawImage(glb.foodImg[this.act], x, y, this.width, this.height);
         glb.context.fillStyle = 'red';
@@ -606,6 +611,7 @@ class SHUIJING {
     constructor(obj) {
         this.exterior = obj.exterior || 0;
         this.hp = obj.hp;
+        this.img=glb.house[this.exterior];
         this.maxhp = obj.hp;
         this.xy = obj.xy;
         this.id=obj.id||Math.random();
@@ -624,7 +630,7 @@ class SHUIJING {
         //glb.context.fillStyle = "red";
         let { x, y } = this.xy;
         //glb.context.fillRect(x, y, this.width - 1, this.height - 1);
-        glb.context.drawImage(glb.house[this.exterior] || glb.house[0], x, y, this.width, this.height);
+        glb.context.drawImage(this.img, x, y, this.width, this.height);
         if (this.hp > 0) {// 画血条
             glb.context.fillStyle = "green";
             glb.context.fillRect(x, y + 5, this.hp / this.maxhp * this.width, 5);
@@ -1207,7 +1213,7 @@ class Battlefield {
     drawAll() {
         //const timer = Date.now();
         this.clearBoard();
-        let list = ["foodlist","shuijinglist", "walllist", "tanklist", "zidanlist", "boomlist", "promptlist"];
+        let list = ["shuijinglist", "walllist", "foodlist","tanklist", "zidanlist", "boomlist", "promptlist"];
         list.forEach((v) => {
             let arr = glb[v];
             let newarr = [];

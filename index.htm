@@ -8,42 +8,50 @@
 </head>
 
 <body>
-    <div id="candiv">
-        <div id="msg">
-            <p id="pass">第0关</p>
-            <div id="player1">
-                <span class="hp">0</span>
-                <span class="sspeed">射速</span>
-                <span class="shootFar">射程</span>
-                <span class="moveSpeed">移速</span>
-                <span class="baojishang">暴击</span>
-                <span class="baojilv">暴击</span>
-                <span class="xixie">吸血率</span>
-                <span class="sh">伤害</span>
-                <span class="score">得分:0</span>
+    <div style="display: flex;">
+        <div style="flex: 85%;"><canvas id="can"></canvas></div>
+        <div id="candiv">
+            <div id="msg">
+                <p id="pass">第0关</p>
+                <div id="player1" class="player">
+                    <div class="hp">0</div>
+                    <div class="sspeed">射速</div>
+                    <div class="shootFar">射程</div>
+                    <div class="moveSpeed">移速</div>
+                    <div class="baojishang">暴击</div>
+                    <div class="baojilv">暴击</div>
+                    <div class="xixie">吸血率</div>
+                    <div class="sh">伤害</div>
+                    <div class="score">得分:0</div>
+                </div>
+                <div id="player2" class="player">
+                    <div class="hp">0</div>
+                    <div class="sspeed">射速</div>
+                    <div class="shootFar">射程</div>
+                    <div class="moveSpeed">移速</div>
+                    <div class="baojishang">暴击</div>
+                    <div class="baojilv">暴击</div>
+                    <div class="xixie">吸血率</div>
+                    <div class="sh">伤害</div>
+                    <div class="score">得分:0</div>
+                </div>
             </div>
-            <div id="player2">
-                <span class="hp">0</span>
-                <span class="sspeed">射速</span>
-                <span class="shootFar">射程</span>
-                <span class="moveSpeed">移速</span>
-                <span class="baojishang">暴击</span>
-                <span class="baojilv">暴击</span>
-                <span class="xixie">吸血率</span>
-                <span class="sh">伤害</span>
-                <span class="score">得分:0</span>
+            <div style="border-radius: 10px;background-color: #fff;padding: 5px;margin-top: 5px;">
+                <button id="start">重开</button>
+                <button id="pause">暂停</button>
+                <button id="btn_shop">商店</button>
+                <select id="playercount">
+                    <option value="1">单人</option>
+                    <option value="2">双人</option>
+                </select>
+                <div>
+                    <div>p1名字:<input type="text" id="p1name" value="P1"></div>
+                    <div>p2名字:<input type="text" id="p2name" value="P2"></div>
+                    <button id="btn_save">保存</button>
+                </div>
             </div>
         </div>
-        <canvas id="can"></canvas>
-        <div>
-            <button id="start">重开</button>
-            <button id="pause">暂停</button>
-            <button id="btn_shop">商店</button>
-            <select id="playercount">
-                 <option value="1">单人</option>
-                 <option value="2">双人</option>
-             </select>
-        </div>
+
     </div>
     <div id="shop">
         <ul class="item-list">

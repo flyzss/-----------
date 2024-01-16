@@ -99,24 +99,25 @@ let glb = {
         pick:[],
         go:[],
         missile:[],
+        tankMove:[],
         die:[]
     },
-    playAudio(name){
+    playAudio(name,autoPlay=true,loop=false,volume=1){
         for(let i=0;i<glb.audioPool[name].length;i++){//从Audio池中找播放完成的音频重复利用
             if(glb.audioPool[name][i].paused){
                 glb.audioPool[name][i].currentTime=0;
-                glb.audioPool[name][i].play();
+                glb.audioPool[name][i].volume=volume;
+                glb.audioPool[name][i].loop=loop;
+                if(autoPlay){
+                    glb.audioPool[name][i].play();
+                }
                 return glb.audioPool[name][i];
             }
         }
         glb.audioPool[name].push(new Audio(`audio/${name}.mp3`));
-        glb.audioPool[name][glb.audioPool[name].length-1].play();
-        if(name=='boom'){
-            glb.audioPool[name][glb.audioPool[name].length-1].volume=0.4;
-        }
-        if(name=='zidan'){
-            glb.audioPool[name][glb.audioPool[name].length-1].volume=0.1;
-        }
+        glb.audioPool[name][glb.audioPool[name].length-1].volume=volume;
+        glb.audioPool[name][glb.audioPool[name].length-1].loop=loop;
+        autoPlay&&glb.audioPool[name][glb.audioPool[name].length-1].play();
         return glb.audioPool[name][glb.audioPool[name].length-1];
     }
 }
@@ -133,13 +134,20 @@ class PROMPT {//减血提示
         this.size = arg.size;
         this.life=arg.life||50;
         this.moveCount = 0;
+        this.moveStep=3;
         this.onDie=arg.onDie||function(){};
         this.handle = setInterval(() => { this.loop() }, 50);
         this.index = glb.promptlist.push(this) - 1;
+        if(this.xy.x+this.size*this.msg.length>glb.width){//防止超出屏幕
+            this.xy.x=glb.width-this.size*this.msg.length;
+        }
+        if(this.xy.y-this.life<0){
+            this.xy.y=this.life;
+        }
     }
     loop() {
-        this.moveCount += 3;
-        this.xy.y -= 3;
+        this.moveCount += this.moveStep;
+        this.xy.y -= this.moveStep;
         if (this.moveCount >= this.life) this.die();
     }
     drawme() {
@@ -166,6 +174,7 @@ class WALL {
         this.height = obj.height || 40;
         this.type = glb.types.wall;
         this.food = obj.food;
+        this.isDie = false;
         this.index = glb.walllist.push(this) - 1;
 
 
@@ -187,6 +196,7 @@ class WALL {
     }
     zhongdan(zidan) {
         //console.log(zidan.who);
+        if(this.isDie)return;
         if (this.hp <= 0) return this.die(zidan.isPlane?null:zidan.who);//飞机的子弹爆出的食物没有归属权
         //if(zidan.belong==1)console.log(this.hp);
         let hp = this.hp;
@@ -209,6 +219,8 @@ class WALL {
         new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: msg, color: "white", size: 15 });
     }
     die(who) {
+        if(this.isDie)return;
+        this.isDie = true;
         if (glb.walllist.length > this.index) glb.walllist[this.index] = 0;
         if (this.food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: this.food, who });
         //console.log(who);
@@ -226,7 +238,7 @@ class BOOM {
         this.play();
     }
     play() {
-        glb.playAudio("boom");
+        glb.playAudio("boom",true,false,0.4);
         (async () => {
             for (let i = 0; i < glb.boomImg.length; i++) {
                 this.img = glb.boomImg[i];
@@ -257,6 +269,7 @@ class FOOD {
         this._size = { width: this.width, height: this.height };
         this.act = obj.act;
         this.who = obj.who;
+        this.isDie=false;
         this.actstr = FOOD.list.map(item => item.singleStr);
         if(obj.act===0)return;
         this.index = glb.foodlist.push(this) - 1;
@@ -270,6 +283,10 @@ class FOOD {
         if(glb.pause)return;
         this.timeout--;
         this.dieTimeout--;
+        if(this.who&&this.who.isDie){
+            this.who=null;//权力者死亡，归属权清空
+            this.dieTimeout=60;//60后消失
+        }
         if(this.timeout<=0&&this.who!=null){
             this.who=null;//30后归属权清空
             this.dieTimeout=60;//60后消失
@@ -282,19 +299,21 @@ class FOOD {
         {},//0
         { text: "回复生命", money: 10000 ,singleStr:'命'},//1
         { text: "玩家分数", money: 100000, hide: true,singleStr:'分' },//2
-        { text: "攻击速度", money: 100000,singleStr:'速' },//3
-        { text: "攻击伤害", money: 80000 ,singleStr:'伤'},//9
-        { text: "射程", money: 100000 ,singleStr:'远'},//5
-        { text: "移动速度", money: 100000 ,singleStr:'快'},//6
+        { text: "攻击速度", money: 100000,singleStr:'速', hide: true},//3
+        { text: "攻击伤害", money: 80000 ,singleStr:'伤', hide: true},//9
+        { text: "射程", money: 100000 ,singleStr:'远', hide: true},//5
+        { text: "移动速度", money: 100000 ,singleStr:'快', hide: true},//6
         { text: "炸裂子弹", money: 4000 ,singleStr:'裂'},//7
-        { text: "炸矿", money: 4000 ,singleStr:'清'},//8
-        { text: "空军支援", money: 80000, singleStr:'援' },//9
-        { text: "暴击率", money: 80000 ,singleStr:'暴'},//10
-        { text: "暴击效果", money: 80000 ,singleStr:'效'},//11
+        { text: "炸矿", money: 4000 ,singleStr:'清', hide: true},//8
+        { text: "空军支援", money: 80000, singleStr:'援', hide: true},//9
+        { text: "暴击率", money: 80000 ,singleStr:'暴', hide: true},//10
+        { text: "暴击效果", money: 80000 ,singleStr:'效', hide: true},//11
         { text: "追踪弹", money: 4000 ,singleStr:'追'},//12
-        { text: "瞬移", money: 200000 ,singleStr:'瞬'},//13
-        { text: "吸血效率", money: 100000 ,singleStr:'吸'},//14
-        { text: "最大生命", money: 100000 ,singleStr:'力'},//15
+        { text: "瞬移", money: 200000 ,singleStr:'瞬', hide: true},//13
+        { text: "吸血效率", money: 100000 ,singleStr:'吸', hide: true},//14
+        { text: "最大生命", money: 100000 ,singleStr:'力', hide: true},//15
+        { text: "宝箱盲盒", money: 100000 ,singleStr:'宝'},//16
+        { text: "水晶护盾", money: 20000 ,singleStr:'盾'},//17
     ]
     static getDataByid(id) {
         return FOOD.list[id];
@@ -323,7 +342,8 @@ class FOOD {
         }
     }
     action(obj) {
-        if(this.who?.isPlayer&&!this.who?.isDie&&this.who?.id!==obj.id)return;//玩家不能拾取队友的东西;敌人的任意拾取
+        if(this.isDie)return;
+        if(this.who&&this.who.id!==obj.id)return;//有归属权的只能给自己使用
         let msg = 0;
         glb.playAudio("pick");
         if (this.act == 1) {
@@ -336,19 +356,19 @@ class FOOD {
             msg = `分数+80000`;
         }
         else if (this.act == 3) {
-            obj.shootSpeed -= 20;
-            msg = `射速+20`;
+            obj.shootSpeed -= 10;
+            msg = `射速+10`;
         }
         else if (this.act == 4) {
             obj.sh += 200;
             msg = `攻击力+200`;
         }
         else if (this.act == 5) {
-            obj.shootFar += 20;
-            msg = `射程+20`;
+            obj.shootFar += 10;
+            msg = `射程+10`;
         }
         else if (this.act == 6) {
-            obj.moveSpeed += 0.2;
+            obj.moveSpeed += 0.1;
             msg = `移动速度+10`;
         }
         else if (this.act == 7) {
@@ -389,11 +409,27 @@ class FOOD {
             msg = `吸血+1%`;
         }
         else if (this.act == 15) {
-            obj.maxhp += 50000;
+            obj.maxhp += 25000;
             obj.hp = obj.maxhp;
-            msg = `最大生命+50000`;
+            msg = `最大生命+25000`;
         }
-        if (msg) new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: msg, color: "lime", size: 30 });
+        else if (this.act == 16) {
+            let act=~~(Math.random()*FOOD.list.length-1)+1;
+            msg = `打开了宝箱,获得了${FOOD.list[act].text}`;
+            setTimeout(() => {
+                new FOOD({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, act, who: obj });
+            },500);
+        }
+        else if (this.act == 17) {
+            const belong=obj.isPlayer?1:2;
+            msg = `水晶护盾，${belong===1?"我方":"敌方"}水晶血量大幅度提升`;
+            for(const shuijing of glb.shuijinglist){
+                if(shuijing&&shuijing.belong==belong){
+                    shuijing.hudun();
+                }
+            }
+        }
+        if (msg) new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: obj.name+'获得'+msg, color: "orange", size: 30, life: 100 });
         this.die();
     }
     zhongdan(obj) {
@@ -401,6 +437,8 @@ class FOOD {
         //obj.die();
     }
     die() {
+        if (this.isDie) return;
+        this.isDie = true;
         clearTimeout(this.handle);
         if (glb.foodlist.length > this.index) glb.foodlist[this.index] = 0;
     }
@@ -417,6 +455,7 @@ class ZIDAN {
         this.direction = arg.direction;
         this.moveSpeed = arg.moveSpeed || 10;
         this.type = glb.types.zidan;
+        this.isDie = false;
         this.baojilv = arg.baojilv || 0.01;
         this.baojishang = arg.baojishang || 2;
         this.far = arg.far || 200;//射程
@@ -501,6 +540,8 @@ class ZIDAN {
 
     }
     die() {
+        if(this.isDie)return;
+        this.isDie = true;
         //console.log(glb.cell[this.ab.a][this.ab.b]);
         if (glb.zidanlist.length > this.index) glb.zidanlist[this.index] = 0;
         clearTimeout(this.handle);
@@ -621,6 +662,7 @@ class SHUIJING {
         this.food = obj.food||1;
         this.belong = obj.belong;
         this.timeout = 0;
+        this.hasHudun=false;
         this.isDie=false;
         this.index = glb.shuijinglist.push(this) - 1;
         this.loop();
@@ -631,12 +673,19 @@ class SHUIJING {
         let { x, y } = this.xy;
         //glb.context.fillRect(x, y, this.width - 1, this.height - 1);
         glb.context.drawImage(this.img, x, y, this.width, this.height);
+        this.hasHudun&&glb.context.drawImage(glb.foodImg[17], x, y, this.width, this.height);
         if (this.hp > 0) {// 画血条
             glb.context.fillStyle = "green";
             glb.context.fillRect(x, y + 5, this.hp / this.maxhp * this.width, 5);
             glb.context.strokeStyle = "green";
             glb.context.strokeRect(x, y + 5, this.width, 5);
         }
+    }
+    hudun() {//获得护盾
+        if(this.hasHudun)return;
+        this.hasHudun=true;
+        this.maxhp=this.maxhp*5;
+        this.hp=this.maxhp;
     }
     loop() {
         if (this.hp < this.maxhp) {
@@ -648,6 +697,7 @@ class SHUIJING {
         }, 1000);
     }
     zhongdan(obj) {
+        if(this.isDie)return;
         //console.log(obj.who);
         if (this.hp <= 0) return this.die(obj.who);
         if (obj.belong == 1 && this.belong == 1) return;
@@ -805,7 +855,7 @@ class TANK {
         let width = this.tmp.zidanwidth || 15, height = this.tmp.zidanheight || 15;
         let zhuizongdan = this.zhuizongdan || this.tmp.zhuizongdan || 0;
         let zhalie = this.zhalie || this.tmp.zhalie || 0;
-        glb.playAudio("zidan");
+        glb.playAudio("zidan",true,false,0.1);
         new ZIDAN({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.sh, xy: { x: x + this.width / 2 - width / 2, y: y + this.height / 2 - height / 2 }, belong: this.belong, exterior: 0, who: this, direction: this.direction, far: this.shootFar, width, height, zhalie, zhuizongdan });
     }
     shoot1() {//炮弹
@@ -875,6 +925,7 @@ class TANK {
         return true;
     }
     zhongdan(obj) {
+        if(this.isDie)return;
         if (obj.belong != this.belong && !this.stop) {
             let hp = this.hp;
             let baoji=false;
@@ -933,6 +984,9 @@ class Battlefield {
         this.playerCount = playerCount;
         this.init();
         this.drawAll();
+        this.bgm=new Audio('audio/bgm1.mp3');
+        this.bgm.loop=true;
+        this.bgm.volume=1;
         setInterval(() => { this.msgCallBackfun() }, 500);
         this.looptimehandle = setInterval(() => { this.loop() }, 500);
     }
@@ -957,7 +1011,13 @@ class Battlefield {
         glb.context.clearRect(0, 0, glb.width, glb.height);
     }
     pause(flag) {
-        flag ? glb.gamePause() : glb.gameStart();
+        if(flag){
+            glb.gamePause();
+            this.bgm.pause()
+        }else{
+            glb.gameStart();
+            this.bgm.play();
+        }
     }
     loop() {
         if (glb.pause) return;
@@ -1003,10 +1063,12 @@ class Battlefield {
             clearInterval(this.looptimehandle); 
             this.player1.die();
             this.player2.die();
+            this.bgm.pause();
             return alert("游戏结束"); 
         }
         if (oppcount == 0 && foodcount == 0) {
             glb.pause = true;
+            this.bgm.pause();
             for(let v of glb.zidanlist){//防止子弹带入下一关
                 v&&v.die
             }
@@ -1023,10 +1085,9 @@ class Battlefield {
                 this.player2.hp=this.player2.maxhp/2;
                 this.player2.repush();
             }
-            this.player1.xy = { x: 300, y: 750 };
-            this.player2.xy = { x: 700, y: 750 };
             this.player1.tmp = {};
             this.player2.tmp = {};
+            this.resetPos();
             new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 1, xy: { x: 550, y: 700 }, exterior: 1 });
             new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 2, xy: { x: 550, y: 100 } });
             for (let i = 0; i < 7; i++) {//随机生成坦克
@@ -1043,8 +1104,14 @@ class Battlefield {
             new PROMPT({ xy: { x: 300, y: glb.height/2 }, msg: `第${this.pass}关，准备！`, color: "orange", size: 80, life: 80,onDie:()=>{
                 new PROMPT({ xy: { x: glb.width/2-200, y: glb.height/2 }, msg: `开始!`, color: "orange", size: 120, life: 100})
                 glb.pause = false;
+                this.bgm.currentTime = 0;
+                this.bgm.play();
             } });
         }
+    }
+    resetPos(){
+        this.player1.xy = { x: 300, y: 750 };
+        this.player2.xy = { x: 700, y: 750 };
     }
     killAll(){
         for (let i = 0, l = glb.tanklist.length; i < l; i++) {
@@ -1395,6 +1462,9 @@ $(() => {
             zc.pause(0);
             $this.text("暂停");
         }
+    })
+    $("#resetPos").click(function () {
+        zc.resetPos();
     })
     $("#playercount").change(function () {
         let val = ~~$(this).val();

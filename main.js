@@ -920,7 +920,7 @@ class TANK {
                 baojilv: this.baojilv,
                 moveSpeed: 8,
                 baojishang: this.baojishang, sh: 12000 + this.sh * 5,
-                zhuizongdan: 1,
+                zhuizongdan: 0,
                 xy: this.xy, belong: this.belong, exterior: 0,
                 who: this, direction: this.direction, far: this.shootFar * 5, width: 55, height: 55
             });
@@ -956,7 +956,7 @@ class TANK {
         return {x,y}
     }
     ai() {
-        if (Math.floor(Math.random() * 800) == 0) this.shoot1();//敌人有千分之一的概率发炮
+        //if (Math.floor(Math.random() * 800) == 0) this.shoot1();//敌人有千分之一的概率发炮
         let hit=false;
         let direction=this.direction;
         for(let i=0;i<4;i++){//四个方向搜索
@@ -984,6 +984,7 @@ class TANK {
                 }
                 console.log(`${this.name}敌方坦克碰撞${hit.name}`);
                 this.shoot();
+                this.shoot1();//敌人有千分之一的概率发炮
                 return;
             }
             if(hit.type===glb.types.shuijing&&hit.isPlayer!==this.isPlayer&&hit.belong!==this.belong){//如果碰撞到水晶
@@ -991,6 +992,7 @@ class TANK {
                     this.move(direction)
                 }
                 this.shoot();
+                this.shoot1();//敌人有千分之一的概率发炮
                 return;
             }
             if(hit.type===glb.types.wall){//如果碰撞到墙

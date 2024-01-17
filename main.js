@@ -10,8 +10,8 @@ let glb = {
     promptlist: [],
     pause: 0,
     pass: 0,
-    width: 1200,
-    height: 800,
+    width: 1281,
+    height: 880,
     context: document.getElementById("can").getContext("2d"),
     tankImg: [],
     boomImg: [],
@@ -21,6 +21,16 @@ let glb = {
     foodImg: [],
     house: [],
     biankuangImg: [],
+    skillImg2: new Array(9).fill(0).map((v, i) => {
+        v = new Image();
+        v.src = `image/skill/2/${i}.png`;
+        return v;
+    }),
+    skillImg1: new Array(6).fill(0).map((v, i) => {
+        v = new Image();
+        v.src = `image/skill/1/${i}.png`;
+        return v;
+    }),
     types: { tank: 0, zidan: 1, wall: 2, food: 3, plane: 4, boom: 5, shuijing: 6 },
     zidancolors: ["LightGray", "white", "blue", "yellow", "lime", "Purple", "Crimson"],
     isin: function (x, y, width, height) {
@@ -94,12 +104,12 @@ let glb = {
         "银狐",
         "狂鲨",
         "金蝎",
-        "火鸟",
+        "火凤",
         "冰龙",
         "暗影蛇",
         "钢猿",
         "雷狼",
-        "水蛟",
+        "墨蛟",
         "岩猩",
         "烈虎",
         "燃鹰",
@@ -114,7 +124,7 @@ let glb = {
         "毒蜂",
         "雷鹰",
         "铁犀",
-        "剧毒蛇",
+        "毒蛇",
         "寒冰熊"
       ],
     getTankName: function () {
@@ -146,9 +156,11 @@ let glb = {
         go: [],
         missile: [],
         attackShuijing: [],
+        kehuan: [],
+        warning: [],
         die: []
     },
-    playAudio(name, autoPlay = true, loop = false, volume = 1) {
+    playAudio(name, autoPlay = true, loop = false, volume = 1,max=Infinity) {
         for (let i = 0; i < glb.audioPool[name].length; i++) {//从Audio池中找播放完成的音频重复利用
             if (glb.audioPool[name][i].paused) {
                 glb.audioPool[name][i].currentTime = 0;
@@ -160,6 +172,7 @@ let glb = {
                 return glb.audioPool[name][i];
             }
         }
+        if (glb.audioPool[name].length >= max) return;
         glb.audioPool[name].push(new Audio(`audio/${name}.mp3`));
         glb.audioPool[name][glb.audioPool[name].length - 1].volume = volume;
         glb.audioPool[name][glb.audioPool[name].length - 1].loop = loop;
@@ -355,7 +368,7 @@ class FOOD {
         { text: "移动速度", money: 100000, singleStr: '移速', hide: true },//6
         { text: "炸裂子弹", money: 10000, singleStr: '炸裂' },//7
         { text: "炸矿", money: 4000, singleStr: '清矿', hide: true },//8
-        { text: "空军支援", money: 80000, singleStr: '飞机', hide: true },//9
+        { text: "空军支援", money: 100000, singleStr: '飞机', hide: true },//9
         { text: "暴击率", money: 80000, singleStr: '暴率', hide: true },//10
         { text: "暴击效果", money: 80000, singleStr: '爆伤', hide: true },//11
         { text: "追踪弹", money: 10000, singleStr: '追踪' },//12
@@ -553,7 +566,7 @@ class ZIDAN {
         let ret;
         let { x, y } = this.xy;
         for (const tank of glb.tanklist) {
-            if (tank && tank.belong != this.belong) {
+            if (tank && tank.belong != this.belong&&tank.preAnimationTime<=0) {
                 let tmp = Math.pow(Math.pow(tank.xy.x - x, 2) + Math.pow(tank.xy.y - y, 2), 0.5);
                 if (tmp < jl) {
                     jl = tmp;
@@ -803,8 +816,8 @@ class SHUIJING {
         if (this.isDie) return;
         //console.log(obj.who);
         if (this.hp <= 0) return this.die(obj.who);
-        if (obj.belong == 1 && this.belong == 1) return;
-        if (obj.belong != 1 && this.belong == 2) return;
+        if (obj.belong== this.belong) return;
+        //if (obj.belong != 1 && this.belong == 2) return;//疯狂的坦克不受伤害
         //if(obj.belong==1)console.log(this.hp);
         let hp = this.hp;
         let sh = ~~(obj.sh * 0.8 + Math.random() * (obj.sh * 0.2));
@@ -898,6 +911,12 @@ class TANK {
         this.autoGetBoomCount = 0;
         this.autoHuifu=0.2;//每分钟自动恢复血量的百分比默认20%
         this.repush();
+        this.preAnimationTime = arg.preAnimationTime || 0;//前置动画时间
+        if(this.preAnimationTime>0){
+            this.stop=true;
+            this.preAnimation();
+            glb.pause||glb.playAudio("kehuan");
+        }
     }
     set moveSpeed(val) {
         this._moveSpeed = val;
@@ -905,6 +924,17 @@ class TANK {
     }
     get moveSpeed() {
         return this._moveSpeed;
+    }
+    preAnimation(){
+        if(!glb.pause){
+            this.preAnimationImg=glb.skillImg2[(Number.MAX_SAFE_INTEGER- this.preAnimationTime)%glb.skillImg2.length];
+            this.preAnimationTime--;            
+        }
+        if(this.preAnimationTime>0){
+            setTimeout(()=>{this.preAnimation();},1000/10);
+        }else{
+            this.stop=false;
+        }
     }
     repush() {
         this.width = this._size.width;
@@ -916,6 +946,17 @@ class TANK {
         this.handle = setInterval(() => { this.loop() }, 20);
     }
     drawme() {
+        if(this.preAnimationTime>0){//如果有前置动画
+            glb.context.globalAlpha=0.5;
+            glb.context.drawImage(this.img, this.xy.x, this.xy.y, this.width, this.height);
+            glb.context.globalAlpha=1;
+            this.preAnimationImg&&glb.context.drawImage(this.preAnimationImg, this.xy.x, this.xy.y, this.width, this.height);
+            glb.context.fillStyle = 'white';
+            let fsize = 10;
+            glb.context.font = fsize + 'px Arial';
+            glb.context.fillText(`正在召唤...`, this.xy.x+5, this.xy.y+20,);
+            return;
+        }
         let direction = this.direction;
         let angel = 0;
         if (direction == 0) { angel = -90 }
@@ -933,6 +974,16 @@ class TANK {
 
         //this.isPlayer&&glb.context.drawImage(glb.biankuangImg[0], x, y, this.width, this.height);
         this.isDie==false&&this.zhongduCount > 0 && glb.context.drawImage(glb.foodImg[20], x, y, this.width, this.height);
+        if (this.boomCount > 0) {
+            glb.context.drawImage(glb.biankuangImg[2], x+this.width, y-10, 20, 20);//画导弹图标
+            glb.context.fillStyle = 'white';
+            let fsize = 15;
+            glb.context.font = fsize + 'px Arial';
+            glb.context.fillText(`x${this.boomCount}`, x + this.width + 20, y+10);
+        }
+        if(y-35<0){
+            y=y+(0-(y-35));
+        }
         if (this.hp > 0) {// 画血条
             let color=this.belong===1?"green":"red";
             glb.context.fillStyle = color;
@@ -941,17 +992,14 @@ class TANK {
             glb.context.strokeRect(x, y - 5, this.width, 5);
         }
         if (this.name) {
+            
             glb.context.fillStyle = this.fontColor;
             let fsize = 20;
+            if(x+6+(this.chenghao+this.name).length*fsize>glb.width){
+                x=glb.width-((this.chenghao+this.name).length*fsize+6);
+            }
             glb.context.font = fsize + 'px Arial';
             glb.context.fillText(this.chenghao + this.name, x + 6, y - 15);
-        }
-        if (this.boomCount > 0) {
-            glb.context.drawImage(glb.biankuangImg[2], x+this.width, y-10, 20, 20);//画导弹图标
-            glb.context.fillStyle = 'white';
-            let fsize = 15;
-            glb.context.font = fsize + 'px Arial';
-            glb.context.fillText(`x${this.boomCount}`, x + this.width + 20, y+10);
         }
     }
     xixiefun(val) {//吸血
@@ -994,7 +1042,7 @@ class TANK {
 
     }
     loop() {
-        if (glb.pause) return;
+        if (glb.pause||this.stop) return;
         if (this.hp <= 0) {
             this.die();
             return;
@@ -1053,7 +1101,7 @@ class TANK {
 
         if(hit!==false){//在射程内碰撞
 
-            if(hit.type===glb.types.tank&&hit.belong!==this.belong){//如果碰撞到敌方坦克
+            if(hit.type===glb.types.tank&&hit.belong!==this.belong&&hit.preAnimationTime<=0){//如果碰撞到敌方坦克并且没有动画
                 if(this.direction!==direction){
                     this.move(direction)
                 }
@@ -1076,6 +1124,7 @@ class TANK {
             if(hit.type===glb.types.food&&(!hit.who||hit.who.id==this.id)){//如果碰撞到食物
                 //console.log(`${this.name}碰撞食物${hit.act}`);
                 if (!this.move(direction)) this.direction = Math.floor(Math.random() * 4);//碰撞后随机换向
+                this.shoot();
                 return;
             }
         }
@@ -1101,7 +1150,7 @@ class TANK {
         return true;
     }
     zhongdan(obj) {//中弹
-        if (this.isDie) return;
+        if (this.isDie||this.preAnimationTime>0) return;//死亡或者前置动画
         if (obj.belong != this.belong && !this.stop) {
             let hp = this.hp;
             let baoji = false;
@@ -1291,9 +1340,9 @@ class Battlefield {
             for (let i = 0; i < 7; i++) {//随机生成坦克
                 this.makeTank(null, null, { x: 0 + i * 120 + 50, y: 0 });
             }
-            for (let i = 0; i < 195; i++) {
+            for (let i = 0; i < 189; i++) {
                 let x = (i % (glb.width / 61)) * 61;
-                let y = 100 + Math.floor(i / (glb.width / 61)) * 61;
+                let y = 140 + Math.floor(i / (glb.width / 61)) * 61;
                 if (glb.checkhit({ xy: { x, y }, width: 60, height: 60 }) != false || !glb.isin(x, y, 60, 60)) continue;
                 new WALL({ hp: 1000 * Math.floor(Math.random() * 5) + this.pass * 100, food: FOOD.list.map((v, i) => i)[Math.floor(Math.random() * (150 + this.pass * 5)) + 1] || 0, xy: { x, y }, width: 60, height: 60 })
             }
@@ -1326,7 +1375,7 @@ class Battlefield {
                     sh: 5,
                     moveSpeed: 2,
                     boomCount: 5,
-                    zhuizongdan: 1,
+                    //zhuizongdan: 1,
                     belong: 1,
                     hp: 20,
                 },
@@ -1373,7 +1422,7 @@ class Battlefield {
                     fontColor: "purple",
                     score: 3000,
                     baojilv: 0.1,
-                    zhuizongdan: 1,
+                    //zhuizongdan: 1,
                     boomCount: 1,
                     sh: 3,
                     belong: 10//攻击自己人
@@ -1445,7 +1494,11 @@ class Battlefield {
                 if (glb.checkhit({ xy, width: 60, height: 60 }) == false && glb.isin(xy.x, xy.y, 60, 60)) break;
             }
         }
-        return new TANK({ isPlayer, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, exterior: Math.round(Math.random() * 12) + 2, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
+        if(fontColor==='purple'){
+            glb.playAudio('warning')//强敌来袭警告
+            new PROMPT({ xy:{...xy}, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200});
+        }
+        return new TANK({ isPlayer,preAnimationTime:20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, exterior: Math.round(Math.random() * 12) + 2, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
     }
     msgCallBackfun() {
         let arg = {
@@ -1483,7 +1536,7 @@ class Battlefield {
         //const timer = Date.now();
         if(this.gameOver) return;
         this.clearBoard();
-        let list = ["shuijinglist", "walllist", "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist"];
+        let list = ["walllist","shuijinglist",  "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist"];
         list.forEach((v) => {
             let arr = glb[v];
             // let newarr = [];
@@ -1702,7 +1755,9 @@ $(() => {
         (e || window.event).returnValue = confirmationMessage; // 兼容 Gecko + IE
         return confirmationMessage; // 兼容 Gecko + Webkit, Safari, Chrome
     });
-
+    document.oncontextmenu = function(event) {
+        event.preventDefault();
+    };
 })
 function ondragoverfunction(e) {  //源对象在悬停在目标对象上时  
     e.preventDefault();  //阻止默认行为，使得drop可以触发  

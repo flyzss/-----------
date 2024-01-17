@@ -47,7 +47,7 @@ let glb = {
             this.house[i] = new Image();
             this.house[i].src = `image/house/${i}.png`
         }
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 3; i++) {
             this.biankuangImg[i] = new Image();
             this.biankuangImg[i].src = `image/biankuang/${i}.png`
         }
@@ -71,7 +71,7 @@ let glb = {
         return true;
     },
     checkhit: function (obj) {
-        let list = ["foodlist", "walllist", "tanklist", 'shuijinglist'];
+        let list = ["tanklist", "walllist","foodlist",  'shuijinglist'];
         for (let j = 0; j < list.length; j++) {
             let arr = glb[list[j]];
             for (let i = 0, l = arr.length; i < l; i++) {
@@ -84,10 +84,51 @@ let glb = {
         };
         return false;
     },
-    tankNameList: ["猎鹰", "黑豹", "灰熊", "猛虎", "雄狮", "影狼", "银狐", "狂鲨", "金蝎", "火鸟", "冰龙"],
+    tankNameList: [
+        "猎鹰",
+        "黑豹",
+        "灰熊",
+        "猛虎",
+        "雄狮",
+        "影狼",
+        "银狐",
+        "狂鲨",
+        "金蝎",
+        "火鸟",
+        "冰龙",
+        "暗影蛇",
+        "钢猿",
+        "雷狼",
+        "水蛟",
+        "岩猩",
+        "烈虎",
+        "燃鹰",
+        "霜熊",
+        "幽狐",
+        "毒蝎",
+        "炎蟾",
+        "冰狼",
+        "巨象",
+        "深海鲨",
+        "炎鳗",
+        "毒蜂",
+        "雷鹰",
+        "铁犀",
+        "剧毒蛇",
+        "寒冰熊"
+      ],
     getTankName: function () {
         let n = Math.floor(Math.random() * this.tankNameList.length);
         return this.tankNameList[n];
+    },
+    pushToArr: function (arr, obj) {
+        for(let i=0;i<arr.length;i++){
+            if(!arr[i]){
+                arr[i]=obj;
+                return i;
+            }
+        }
+        return arr.push(obj)-1;
     },
     gamePause: function () {
         glb.pause = 1;
@@ -142,7 +183,7 @@ class PROMPT {//减血提示
         this.moveStep = 3;
         this.onDie = arg.onDie || function () { };
         this.handle = setInterval(() => { this.loop() }, 50);
-        this.index = glb.promptlist.push(this) - 1;
+        this.index = glb.pushToArr(glb.promptlist, this);
         if (this.xy.x + this.size * this.msg.length > glb.width) {//防止超出屏幕
             this.xy.x = glb.width - this.size * this.msg.length;
         }
@@ -180,7 +221,7 @@ class WALL {
         this.type = glb.types.wall;
         this.food = obj.food;
         this.isDie = false;
-        this.index = glb.walllist.push(this) - 1;
+        this.index = glb.pushToArr(glb.walllist, this);
 
 
     }
@@ -217,7 +258,7 @@ class WALL {
         if (this.hp <= 0) {
             this.die(zidan.isPlane ? null : zidan.who);//飞机的子弹爆出的食物没有归属权
             zidan.who.changeScore(50);
-            zidan.who.killCount++;
+            zidan.who.killCount+=0.334;//杀敌计数器,每个方块=0.3个敌人
         };
         if (zidan.sh <= 0) zidan.die();
         zidan.boom(this);
@@ -238,7 +279,7 @@ class BOOM {
         this.exterior = obj.exterior || 0;
         this.xy = obj.xy;
         this.id = obj.id || Math.random();
-        this.index = glb.boomlist.push(this) - 1;
+        this.index = glb.pushToArr(glb.boomlist, this);
         this.img = glb.boomImg[2];
         this.play();
     }
@@ -277,10 +318,10 @@ class FOOD {
         this.isDie = false;
         this.actstr = FOOD.list.map(item => item.singleStr);
         if (obj.act === 0) return;
-        this.index = glb.foodlist.push(this) - 1;
+        this.index = glb.pushToArr(glb.foodlist, this);
         this.timeout = 30;
         this.dieTimeout = 60;
-        if(this.act===19){//炸弹没有归属权，并且消失时间为20秒
+        if(this.act===19||this.act===20){//炸弹毒药没有归属权，并且消失时间为20秒
             this.dieTimeout = 20;
             this.who = null;
         }
@@ -306,25 +347,27 @@ class FOOD {
     }
     static list = [
         {},//0
-        { text: "回复生命", money: 10000, singleStr: '命' },//1
+        { text: "回复生命", money: 20000, singleStr: '回血' },//1
         { text: "玩家分数", money: 100000, hide: true, singleStr: '分' },//2
-        { text: "攻击速度", money: 100000, singleStr: '速', hide: true },//3
-        { text: "攻击伤害", money: 80000, singleStr: '伤', hide: true },//9
-        { text: "射程", money: 100000, singleStr: '远', hide: true },//5
-        { text: "移动速度", money: 100000, singleStr: '快', hide: true },//6
-        { text: "炸裂子弹", money: 4000, singleStr: '裂' },//7
-        { text: "炸矿", money: 4000, singleStr: '清', hide: true },//8
-        { text: "空军支援", money: 80000, singleStr: '援', hide: true },//9
-        { text: "暴击率", money: 80000, singleStr: '暴', hide: true },//10
-        { text: "暴击效果", money: 80000, singleStr: '效', hide: true },//11
-        { text: "追踪弹", money: 4000, singleStr: '追' },//12
-        { text: "瞬移", money: 200000, singleStr: '瞬', hide: true },//13
-        { text: "吸血效率", money: 100000, singleStr: '吸', hide: true },//14
-        { text: "最大生命", money: 100000, singleStr: '力', hide: true },//15
-        { text: "宝箱盲盒", money: 100000, singleStr: '宝' },//16
-        { text: "水晶护盾", money: 20000, singleStr: '盾' },//17
-        { text: "导弹", money: 20000, singleStr: '导弹' },//18
-        { text: "炸弹", money: 1, singleStr: '小心' },//19
+        { text: "攻击速度", money: 100000, singleStr: '攻速', hide: true },//3
+        { text: "攻击伤害", money: 80000, singleStr: '伤害', hide: true },//9
+        { text: "射程", money: 100000, singleStr: '射程', hide: true },//5
+        { text: "移动速度", money: 100000, singleStr: '移速', hide: true },//6
+        { text: "炸裂子弹", money: 10000, singleStr: '炸裂' },//7
+        { text: "炸矿", money: 4000, singleStr: '清矿', hide: true },//8
+        { text: "空军支援", money: 80000, singleStr: '飞机', hide: true },//9
+        { text: "暴击率", money: 80000, singleStr: '暴率', hide: true },//10
+        { text: "暴击效果", money: 80000, singleStr: '爆伤', hide: true },//11
+        { text: "追踪弹", money: 10000, singleStr: '追踪' },//12
+        { text: "瞬移", money: 200000, singleStr: '瞬移', hide: true },//13
+        { text: "吸血效率", money: 100000, singleStr: '吸血', hide: true },//14
+        { text: "最大生命", money: 100000, singleStr: '体力', hide: true },//15
+        { text: "宝箱盲盒", money: 100000, singleStr: '盲盒' },//16
+        { text: "水晶护盾", money: 20000, singleStr: '保家' },//17
+        { text: "导弹", money: 20000, singleStr: '导弹' , hide: true},//18
+        { text: "炸弹", money: 1, singleStr: '小心', hide: true },//19
+        { text: "毒药", money: 1, singleStr: '中毒', hide: true },//20
+        { text: "坦克零件", money: 100000, singleStr: '零件', hide: true },//21
     ]
     static getDataByid(id) {
         return FOOD.list[id];
@@ -355,6 +398,12 @@ class FOOD {
     action(obj) {
         if (this.isDie) return;
         if (this.who && this.who.id !== obj.id) return;//有归属权的只能给自己使用
+        obj.changeScore(1000);//不管吃到什么食物必给1000分
+        obj.eatFoodCount++;
+        if(obj.eatFoodCount===3&&!obj.isPlayer){
+            obj.chenghao='贪吃鬼'+obj.chenghao;
+            obj.fontColor='purple';
+        }
         let msg = 0;
         glb.playAudio("pick");
         if (this.act == 1) {
@@ -432,7 +481,7 @@ class FOOD {
             }, 500);
         }
         else if (this.act == 17) {
-            const belong = obj.isPlayer ? 1 : 2;
+            const belong = obj.belong===1 ? 1 : 2;
             msg = `水晶护盾，${belong === 1 ? "我方" : "敌方"}水晶血量大幅度提升`;
             for (const shuijing of glb.shuijinglist) {
                 if (shuijing && shuijing.belong == belong) {
@@ -450,6 +499,14 @@ class FOOD {
             let sh=~~(obj.hp/2);
             obj.changeHp(-sh);
             new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: `被炸掉${sh}`, color: "red", size: 40 });
+        }
+        else if (this.act == 20) {
+            msg = `真倒霉，吃了一口毒药，中毒了!`;
+            obj.zhongdu();
+        }
+        else if (this.act == 21) {
+            msg = `坦克零件，每分钟自动回血能力+1%`;
+            obj.autoHuifu += 0.01;
         }
         if (msg) new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: obj.name + '获得' + msg, color: "orange", size: 30, life: 100 });
         this.die();
@@ -488,7 +545,7 @@ class ZIDAN {
         this.zhuizongdan = arg.zhuizongdan || 0;
         this.id = Math.round(Math.random() * 10000000);
         this.handle = setInterval(() => { this.loop() }, 10);
-        this.index = glb.zidanlist.push(this) - 1;
+        this.index = glb.pushToArr(glb.zidanlist, this);
         if (this.zhuizongdan) this.findTarget();
     }
     findTarget() {//寻找目标自动追踪弹
@@ -599,7 +656,7 @@ class PLANE {//飞机
         this.tmp = {};
         this.id = Math.round(Math.random() * 10000000);
         this.keystate = {};
-        this.index = glb.tanklist.push(this) - 1;
+        this.index = glb.pushToArr(glb.tanklist, this);
         this.handle = setInterval(() => { this.loop() }, 20);
         this.audio = glb.playAudio("plane");
     }
@@ -688,7 +745,7 @@ class SHUIJING {
         this.audioCooding = 0;
         this.hudunTimeOut = 0;
         this.isDie = false;
-        this.index = glb.shuijinglist.push(this) - 1;
+        this.index = glb.pushToArr(glb.shuijinglist, this);
         this.loop();
 
     }
@@ -704,13 +761,14 @@ class SHUIJING {
             glb.context.fillText(this.hudunTimeOut, x + this.width / 2, y + this.height / 2);
         }
         if (this.hp > 0) {// 画血条
-            glb.context.fillStyle = "green";
+            const color=this.belong===1?"green":"red";
+            glb.context.fillStyle = color;
             glb.context.fillRect(x, y + 5, this.hp / this.maxhp * this.width, 5);
-            glb.context.strokeStyle = "green";
+            glb.context.strokeStyle = color;
             glb.context.strokeRect(x, y + 5, this.width, 5);
-            glb.context.fillStyle = 'green';
+            glb.context.fillStyle = color;
             glb.context.font = '14px Arial';
-            glb.context.fillText(Math.floor(this.hp), x, y);
+            glb.context.fillText(Math.floor(this.hp), x-14, y);
         }
     }
     hudun() {//获得护盾
@@ -821,10 +879,13 @@ class TANK {
         this.stop = 0;
         this.isai = arg.isai;
         this.arg = arg;
+        this.eatFoodCount = 0;//吃食物计数器
         this.isPlayer = arg.isPlayer || false;
         this.killCount = 0;//杀敌计数器，10个敌人奖励1发炮弹
         this.boomCount = arg.boomCount || 0;
         this.boomTimeOut = 0;
+        this.zhongduTimer = 0;//中毒handler
+        this.zhongduCount = 0;//中毒计数器
         this.isDie = false;
         this.xixie = arg.xixie || 0.01;
         this.tmp = {};
@@ -835,6 +896,7 @@ class TANK {
         this.keystate = {};
         this.autoShoot = arg.autoShoot || false;
         this.autoGetBoomCount = 0;
+        this.autoHuifu=0.2;//每分钟自动恢复血量的百分比默认20%
         this.repush();
     }
     set moveSpeed(val) {
@@ -850,7 +912,7 @@ class TANK {
         this.img = glb.tankImg[this.exterior];
         this.stop = 0;
         this.isDie = false;
-        this.index = glb.tanklist.push(this) - 1;
+        this.index = glb.pushToArr(glb.tanklist, this);
         this.handle = setInterval(() => { this.loop() }, 20);
     }
     drawme() {
@@ -870,10 +932,12 @@ class TANK {
         glb.context.restore();//恢复状态
 
         //this.isPlayer&&glb.context.drawImage(glb.biankuangImg[0], x, y, this.width, this.height);
+        this.isDie==false&&this.zhongduCount > 0 && glb.context.drawImage(glb.foodImg[20], x, y, this.width, this.height);
         if (this.hp > 0) {// 画血条
-            glb.context.fillStyle = "green";
+            let color=this.belong===1?"green":"red";
+            glb.context.fillStyle = color;
             glb.context.fillRect(x, y - 5, this.hp / this.maxhp * this.width, 5);
-            glb.context.strokeStyle = "green";
+            glb.context.strokeStyle = color;
             glb.context.strokeRect(x, y - 5, this.width, 5);
         }
         if (this.name) {
@@ -883,18 +947,19 @@ class TANK {
             glb.context.fillText(this.chenghao + this.name, x + 6, y - 15);
         }
         if (this.boomCount > 0) {
-            glb.context.fillStyle = 'gray';
-            let fsize = 18;
+            glb.context.drawImage(glb.biankuangImg[2], x+this.width, y-10, 20, 20);//画导弹图标
+            glb.context.fillStyle = 'white';
+            let fsize = 15;
             glb.context.font = fsize + 'px Arial';
-            glb.context.fillText(`导弹${this.boomCount}`, x + 6, y - 32);
+            glb.context.fillText(`x${this.boomCount}`, x + this.width + 20, y+10);
         }
     }
-    xixiefun(val) {
+    xixiefun(val) {//吸血
         let x = val * this.xixie
         this.changeHp(x);
         new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `吸血+${~~x}`, color: "green", size: 15 });
     }
-    changeHp(val) {
+    changeHp(val) {//改变血量
         this.hp += val;
         if (this.hp > this.maxhp) this.hp = this.maxhp;
         if (this.hp < 0) this.hp = 0;
@@ -930,6 +995,16 @@ class TANK {
     }
     loop() {
         if (glb.pause) return;
+        if (this.hp <= 0) {
+            this.die();
+            return;
+        }
+        if(this.hp<=this.maxhp/4&&this.score>=FOOD.list[1].money){//如果血量低于1/4，并且积分大于10000，就购买一个加生命的道具
+            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: "购买加生命道具", color: "green", size: 30 });
+            this.score -= FOOD.list[1].money;
+            let food=new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act:1,who:this});
+            food.action(this);
+        }
         if (this.killCount >= 10) {//杀敌10个奖励1发炮弹
             this.boomCount++;
             this.killCount = 0;
@@ -939,7 +1014,7 @@ class TANK {
             this.boomCount++;
             this.autoGetBoomCount = 0;
         }
-        this.changeHp(Math.floor(this.maxhp * 0.2 / 60 / 50));//每秒血量加50
+        this.changeHp(Math.floor(this.maxhp * this.autoHuifu / 60 / 50));//自动恢复血量
         if (this.autoShoot) this.shoot();
         if (this.isai) this.ai();
         if (this.keystate["32"] || this.keystate["96"] || this.keystate["74"]) this.shoot1();
@@ -982,7 +1057,7 @@ class TANK {
                 if(this.direction!==direction){
                     this.move(direction)
                 }
-                console.log(`${this.name}敌方坦克碰撞${hit.name}`);
+                //console.log(`${this.name}敌方坦克碰撞${hit.name}`);
                 this.shoot();
                 this.shoot1();//敌人有千分之一的概率发炮
                 return;
@@ -1017,7 +1092,7 @@ class TANK {
         this.xy = { x, y };
         let hit = glb.checkhit(this);//碰撞检查
         if (!hit) return true;
-        if (hit.type == glb.types.tank || hit.type == glb.types.wall) {//如果碰撞到墙或者坦克
+        if (hit.type == glb.types.tank || hit.type == glb.types.wall||hit.type == glb.types.shuijing) {//如果碰撞到墙或者坦克
             this.xy = oldxy;
             return false;
         }
@@ -1025,7 +1100,7 @@ class TANK {
         this.direction = direction;
         return true;
     }
-    zhongdan(obj) {
+    zhongdan(obj) {//中弹
         if (this.isDie) return;
         if (obj.belong != this.belong && !this.stop) {
             let hp = this.hp;
@@ -1050,14 +1125,28 @@ class TANK {
             new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: msg, color: "red", size: baoji ? 40 : 20 });
         }
     }
-    changeScore(v) {
+    zhongdu(){//中毒
+        if(this.isDie) return;
+        if(this.zhongduTimer)clearInterval(this.zhongduTimer);
+        this.zhongduCount=10;
+        this.zhongduTimer = setInterval(()=>{
+            this.changeHp(-this.maxhp*0.05);//每秒减少5%
+            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `中毒-${this.maxhp*0.05}`, color: "red", size: 40 });
+            this.zhongduCount--;
+            if(this.zhongduCount<=0){
+                clearInterval(this.zhongduTimer);
+            }
+        },1000)
+    }
+    changeScore(v) {//增加积分
         this.score += v;
-        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `积分+${v}`, color: "green", size: 40 });
+        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `积分+${v}`, color: "yellow", size: 30 });
     }
     die(who) {
         if (this.isDie) return;//已经死了
         this.isDie = true;
         if (this.handle) clearTimeout(this.handle);
+        if(this.zhongduTimer)clearInterval(this.zhongduTimer);
         this.stop = 1;
         glb.playAudio("die");
         (async () => {//闪烁
@@ -1097,8 +1186,8 @@ class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 1, name: localStorage.getItem("p1name") || "P1" });
-        this.player2 = new TANK({ isPlayer: true, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 1, name: localStorage.getItem("p2name") || "P2" });
+        this.player1 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 1, name: localStorage.getItem("p1name") || "P1" });
+        this.player2 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 1, name: localStorage.getItem("p2name") || "P2" });
         this.resetPos();
         new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1,isPlayer: true, xy: { x: 550, y: 700 } });
     }
@@ -1166,7 +1255,14 @@ class Battlefield {
             this.player1.die();
             this.player2.die();
             this.bgm.pause();
-            return alert("游戏结束");
+            glb.pause = true;
+            this.gameOver=true;
+            this.drawGameOver();
+            setTimeout(() => {
+                const audio=new Audio('audio/gameover.mp3');
+                audio.play();
+            },500);
+            return ;
         }
         if (oppcount == 0 && foodcount == 0) {
             glb.pause = true;
@@ -1332,7 +1428,7 @@ class Battlefield {
         let ch = getChenghhao();
         let shootFar = (200 + this.pass * 2) * (ch.shootFar || 1);
         let shootSpeed = 1000 - (this.pass * 2 + (ch.shootSpeed || 1));
-        let hp = (1500 + this.pass * 1000) * (ch.hp || 1);
+        let hp = (1500 + this.pass * 500) * (ch.hp || 1);
         let sh = (1000 + this.pass * 70) * (ch.sh || 1);
         let boomCount = ch.boomCount || 0;
         let score = (ch.score || 500);
@@ -1364,7 +1460,8 @@ class Battlefield {
                 shootFar: this.player1.shootFar,
                 baojilv: this.player1.baojilv,
                 baojishang: this.player1.baojishang,
-                xixie: this.player1.xixie
+                xixie: this.player1.xixie,
+                huifu: this.player1.autoHuifu
             },
             p2: {
                 name: this.player2.name,
@@ -1376,25 +1473,27 @@ class Battlefield {
                 shootFar: this.player2.shootFar,
                 baojilv: this.player2.baojilv,
                 baojishang: this.player2.baojishang,
-                xixie: this.player2.xixie
+                xixie: this.player2.xixie,
+                huifu: this.player2.autoHuifu
             }
         }
         this.msgCallBack && this.msgCallBack(arg);
     }
     drawAll() {
         //const timer = Date.now();
+        if(this.gameOver) return;
         this.clearBoard();
         let list = ["shuijinglist", "walllist", "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist"];
         list.forEach((v) => {
             let arr = glb[v];
-            let newarr = [];
-            if (arr.length > 1000) {
-                for (let i = 0, l = arr.length; i < l; i++) {
-                    if (arr[i]) arr[i].index = newarr.push(arr[i]) - 1;//整理数组
-                }
-                glb[v] = newarr;
-                arr = newarr;
-            }
+            // let newarr = [];
+            // if (arr.length > 1000) {
+            //     for (let i = 0, l = arr.length; i < l; i++) {
+            //         if (arr[i]) arr[i].index = newarr.push(arr[i]) - 1;//整理数组
+            //     }
+            //     glb[v] = newarr;
+            //     arr = newarr;
+            // }
             for (let i = 0, l = arr.length; i < l; i++)
                 if (arr[i]) arr[i].drawme();
         });
@@ -1405,6 +1504,17 @@ class Battlefield {
         glb.context.fillStyle = "red";
         glb.context.font = "20px Arial";
         glb.context.fillText(`FPS:${fps}`, 10, 20);
+    }
+    drawGameOver() {
+        const img=new Image();
+        img.src='image/biankuang/fail.jpg';
+        img.onload=()=>{
+            glb.context.drawImage(img, 300, 200, 600, 270);
+        }
+        //glb.context.drawImage(img, 0, 0, glb.width, glb.height);
+        glb.context.fillStyle = "red";
+        glb.context.font = "20px Arial";
+        glb.context.fillText(`123`, 10, 20);
     }
     keydown(keyCode) {
         if (keyCode == 65 || keyCode == 87 || keyCode == 68 || keyCode == 83 || keyCode == 32 || keyCode == 74)
@@ -1436,6 +1546,7 @@ zc.msgCallBack = (arg) => {
     $("#player1 .baojishang").text(`暴击伤害${arg.p1.baojishang.toFixed(2)}`);
     $("#player1 .baojilv").text(`暴击率${(arg.p1.baojilv * 100).toFixed(2)}%`);
     $("#player1 .xixie").text(`吸血率${(arg.p1.xixie * 100).toFixed(2)}%`);
+    $("#player1 .huifu").text(`自动恢复每分钟${(arg.p1.huifu * 100).toFixed(2)}%`);
 
     $("#player2 .score").text(`得分:${arg.p2.score}`);
     $("#player2 .hp").text(`${arg.p2.name} 生命值:${arg.p2.hp}`);
@@ -1446,6 +1557,7 @@ zc.msgCallBack = (arg) => {
     $("#player2 .baojishang").text(`暴击伤害${arg.p2.baojishang.toFixed(2)}`);
     $("#player2 .baojilv").text(`暴击率${(arg.p2.baojilv * 100).toFixed(2)}%`);
     $("#player2 .xixie").text(`吸血率${(arg.p2.xixie * 100).toFixed(2)}%`);
+    $("#player2 .huifu").text(`自动恢复每分钟${(arg.p2.huifu * 100).toFixed(2)}%`);
 }
 
 class SHOP {

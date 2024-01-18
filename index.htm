@@ -9,8 +9,8 @@
 
 <body>
     <div style="display: flex;">
-        <div style="flex: 85%;"><canvas id="can"></canvas></div>
-        <div id="candiv">
+        <div style="flex: 90%;"><canvas id="can"></canvas></div>
+        <div id="candiv" style="overflow-y: scroll;max-height: 100vh;">
             <div id="msg">
                 <p id="pass">第0关</p>
                 <div id="player1" class="player">
@@ -53,6 +53,7 @@
                     <button id="btn_save">保存</button>
                 </div>
             </div>
+            <div style="margin-top: 5px;padding: 5px;color: #fff;background-color: #000;border-radius: 10px;">快捷键说明:W、S、A、D、空格控制玩家1的移动和导弹发射，箭头键和数字键盘0控制玩家2的移动和导弹发射。大键盘和小键盘的1、2、3、4、5可以不用打开商店直接买对应位置的东西。</div>
         </div>
 
     </div>

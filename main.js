@@ -13,7 +13,11 @@ let glb = {
     width: 1281,
     height: 880,
     context: document.getElementById("can").getContext("2d"),
-    tankImg: [],
+    tankImg: new Array(22).fill(0).map((v, i) => {
+        v = new Image();
+        v.src = `image/tank/${i}.png`;
+        return v;
+    }),
     boomImg: [],
     tankboomImg: [],
     planeImg: [],
@@ -21,6 +25,11 @@ let glb = {
     foodImg: [],
     house: [],
     biankuangImg: [],
+    missileImg: new Array(8).fill(0).map((v, i) => {
+        v = new Image();
+        v.src = `image/skill/3/${i}.png`;
+        return v;
+    }),
     skillImg2: new Array(9).fill(0).map((v, i) => {
         v = new Image();
         v.src = `image/skill/2/${i}.png`;
@@ -37,10 +46,6 @@ let glb = {
         return !(x < 0 || y < 0 || x > this.width - width || y > this.height - height);
     },
     makeTankimg: function () {
-        for (let i = 0; i < 15; i++) {
-            this.tankImg.push(new Image());
-            this.tankImg[this.tankImg.length - 1].src = `image/tank/${i}.png`
-        }
         for (let i = 0; i < 3; i++) {
             this.planeImg[i] = new Image();
             this.planeImg[i].src = `image/plane/${i}.png`
@@ -602,12 +607,12 @@ class ZIDAN {
             else if (direction == 1) y -= this.moveSpeed;
             else if (direction == 3) y += this.moveSpeed;
         }
-        if (!glb.isin(x, y, this.width, this.height)) return this.die();//出屏幕
+        //if (!glb.isin(x, y, this.width, this.height)&&this.type==glb.types.zidan) return this.die();//出屏幕
         this.moveCount += this.moveSpeed;
         if (this.zhalie && this.moveCount >= 100) {
             return this.die()//炸裂子弹
         }
-        if (this.moveCount > this.far) return this.die();//有效射程
+        if (this.moveCount > Math.min(this.far,glb.width)) return this.die();//有效射程
         this.xy = { x, y };
         let hit = glb.checkhit(this);
         if (hit) hit.zhongdan(this);
@@ -643,6 +648,32 @@ class ZIDAN {
             new ZIDAN({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.maxsh, xy: this.xy, belong: this.belong, exterior: 0, who: this.who, direction: 2, far: this.far, width: this.width, height: this.height, zhuizongdan: this.zhuizongdan });
             new ZIDAN({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.maxsh, xy: this.xy, belong: this.belong, exterior: 0, who: this.who, direction: 3, far: this.far, width: this.width, height: this.height, zhuizongdan: this.zhuizongdan });
         }
+    }
+}
+class MISSILE extends ZIDAN {//导弹
+    constructor(arg) {
+        super(arg);
+        this.imgList=glb.missileImg;
+        this.imgIndex = 0;
+        this.drawmeRunCount = 0;
+    }
+    drawme() {
+        let direction = this.direction;
+        let angel = 0;
+        if (direction == 0) { angel = 0 }
+        else if (direction == 2) { angel = 180 }
+        else if (direction == 1) { angel = 90 }
+        else if (direction == 3) { angel = 270 }
+        let { x, y } = this.xy;
+        let px = x + this.width / 2, py = y + this.height / 2;
+        this.imgIndex=++this.imgIndex%this.imgList.length;
+        this.drawmeRunCount++;
+        glb.context.save();//保存状态
+        glb.context.translate(px, py);//设置画布上的(0,0)位置，也就是旋转的中心点
+        glb.context.rotate(angel * Math.PI / 180);
+        glb.context.translate(-px, -py);//设置画布上的(0,0)位置，也就是旋转的中心点
+        glb.context.drawImage(this.imgList[this.imgIndex], x, y, this.width, this.height);//把图片绘制在旋转的中心点，
+        glb.context.restore();//恢复状态
     }
 }
 class PLANE {//飞机
@@ -870,7 +901,8 @@ class TANK {
     constructor(arg) {//(生命,外观,立场,位置,面向,ID) 立场=0无敌 1我方 其他敌方,面向0=left 1=up 2=right 3=down
         this.hp = arg.hp;
         this.maxhp = arg.hp;
-        this.exterior = arg.exterior;
+        this.exterior = arg.exterior??(Math.floor(Math.random()*(glb.tankImg.length-2))+2);//0和1为玩家形象
+        //console.log(glb.tankImg.length,this.exterior);
         this.belong = arg.belong;
         this.xy = arg.xy;
         this.fontColor = arg.fontColor || "#fff";
@@ -1012,6 +1044,17 @@ class TANK {
         if (this.hp > this.maxhp) this.hp = this.maxhp;
         if (this.hp < 0) this.hp = 0;
     }
+    shoping(foodIndex) {//快速购买道具
+        if(glb.pause)return;
+        if(FOOD.list[foodIndex].money>this.score){
+            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `无法购买道具${FOOD.list[foodIndex].text}，因为积分不足`, color: "red", size: 30 });
+            return;
+        }
+        this.score -= FOOD.list[foodIndex].money;
+        let food=new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act:foodIndex,who:this});
+        food.action(this);
+        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg:`${this.name}快捷键购买了道具${FOOD.list[foodIndex].text}`, color: "green", size: 30 });
+    }
     shoot() {
         if (this.stop) return;
         if ((new Date().getTime() - this.shootTimeout < this.shootSpeed)) return;
@@ -1023,19 +1066,21 @@ class TANK {
         glb.playAudio("zidan", true, false, 0.1);
         new ZIDAN({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.sh, xy: { x: x + this.width / 2 - width / 2, y: y + this.height / 2 - height / 2 }, belong: this.belong, exterior: 0, who: this, direction: this.direction, far: this.shootFar, width, height, zhalie, zhuizongdan });
     }
-    shoot1() {//炮弹
+    shoot1() {//导弹
         if (this.stop) return;
         if ((new Date().getTime() - this.boomTimeOut < 1000)) return;
         this.boomTimeOut = new Date().getTime();
         if (this.boomCount > 0) {
             glb.playAudio("missile");
-            new ZIDAN({
+            let width = 120, height = 120;
+            new MISSILE({
                 baojilv: this.baojilv,
                 moveSpeed: 8,
+                width, height,
                 baojishang: this.baojishang, sh: 12000 + this.sh * 5,
                 zhuizongdan: 0,
-                xy: this.xy, belong: this.belong, exterior: 0,
-                who: this, direction: this.direction, far: this.shootFar * 5, width: 55, height: 55
+                xy: { x: this.xy.x + this.width / 2- width / 2 , y: this.xy.y + this.height / 2- height / 2 }, belong: this.belong, exterior: 0,
+                who: this, direction: this.direction, far: this.shootFar * 5,
             });
             this.boomCount--;
         }
@@ -1065,11 +1110,11 @@ class TANK {
         this.changeHp(Math.floor(this.maxhp * this.autoHuifu / 60 / 50));//自动恢复血量
         if (this.autoShoot) this.shoot();
         if (this.isai) this.ai();
-        if (this.keystate["32"] || this.keystate["96"] || this.keystate["74"]) this.shoot1();
-        if (this.keystate["37"] || this.keystate["65"]) this.move(0);
-        else if (this.keystate["38"] || this.keystate["87"]) this.move(1);
-        else if (this.keystate["39"] || this.keystate["68"]) this.move(2);
-        else if (this.keystate["40"] || this.keystate["83"]) this.move(3);
+        if (this.keystate["Numpad0"] || this.keystate["Space"] ) this.shoot1();
+        if (this.keystate["ArrowLeft"] || this.keystate["KeyA"]) this.move(0);
+        else if (this.keystate["ArrowUp"] || this.keystate["KeyW"]) this.move(1);
+        else if (this.keystate["ArrowRight"] || this.keystate["KeyD"]) this.move(2);
+        else if (this.keystate["ArrowDown"] || this.keystate["KeyS"]) this.move(3);
     }
     _dir(x,y,direction,moveSpeed){
         if (direction == 0) x -= moveSpeed;
@@ -1235,8 +1280,8 @@ class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 1, name: localStorage.getItem("p1name") || "P1" });
-        this.player2 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 1, name: localStorage.getItem("p2name") || "P2" });
+        this.player1 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: localStorage.getItem("p1name") || "P1" });
+        this.player2 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: localStorage.getItem("p2name") || "P2" });
         this.resetPos();
         new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1,isPlayer: true, xy: { x: 550, y: 700 } });
     }
@@ -1371,7 +1416,7 @@ class Battlefield {
         let getChenghhao = function () {
             let chenghao = [
                 {
-                    name: "你的好朋友",
+                    name: "好朋友",
                     sh: 5,
                     moveSpeed: 2,
                     boomCount: 5,
@@ -1393,7 +1438,7 @@ class Battlefield {
                     shootSpeed: 800,
                 },
                 {
-                    name: "愚蠢的",
+                    name: "大聪明",
                     belong: 12//攻击自己人
                 },
                 {
@@ -1406,7 +1451,7 @@ class Battlefield {
                     score: 1000,
                 },
                 {
-                    name: "死神般的",
+                    name: "死神",
                     moveSpeed: 2,
                     hp: 10,
                     fontColor: "purple",
@@ -1428,7 +1473,7 @@ class Battlefield {
                     belong: 10//攻击自己人
                 },
                 {
-                    name: "射的超远的",
+                    name: "狙击手",
                     shootFar: 5,
                     zhuizongdan: 1,
                     score: 3000,
@@ -1498,7 +1543,7 @@ class Battlefield {
             glb.playAudio('warning')//强敌来袭警告
             new PROMPT({ xy:{...xy}, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200});
         }
-        return new TANK({ isPlayer,preAnimationTime:20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, exterior: Math.round(Math.random() * 12) + 2, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
+        return new TANK({ isPlayer,preAnimationTime:20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
     }
     msgCallBackfun() {
         let arg = {
@@ -1569,10 +1614,45 @@ class Battlefield {
         glb.context.font = "20px Arial";
         glb.context.fillText(`123`, 10, 20);
     }
+    keyPress(keyCode) {//快捷键
+        const map={
+            'Digit1':()=>{
+                this.player1.shoping(1);//生命
+            },
+            'Digit2':()=>{
+                this.player1.shoping(7);//炸裂
+            },
+            'Digit3':()=>{
+                this.player1.shoping(12);//追踪弹
+            },
+            'Digit4':()=>{
+                this.player1.shoping(16);//宝箱
+            },
+            'Digit5':()=>{
+                this.player1.shoping(17);//水晶盾
+            },
+            'Numpad1':()=>{
+                this.player2.shoping(1);//生命
+            },
+            'Numpad2':()=>{
+                this.player2.shoping(7);//炸裂
+            },
+            'Numpad3':()=>{
+                this.player2.shoping(12);//追踪弹
+            },
+            'Numpad4':()=>{
+                this.player2.shoping(16);//宝箱
+            },
+            'Numpad5':()=>{
+                this.player2.shoping(17);//水晶盾
+            },
+        }
+        map[keyCode]&&map[keyCode]();
+    }
     keydown(keyCode) {
-        if (keyCode == 65 || keyCode == 87 || keyCode == 68 || keyCode == 83 || keyCode == 32 || keyCode == 74)
+        if ( keyCode == 'KeyA' || keyCode == 'KeyS' || keyCode == 'KeyD' || keyCode == 'KeyW'||keyCode=='Space')
             this.player1.keystate[keyCode] = true;
-        else
+        else if(keyCode == 'ArrowUp' || keyCode == 'ArrowDown' || keyCode == 'ArrowLeft' || keyCode == 'ArrowRight' ||keyCode=='Numpad0')
             this.player2.keystate[keyCode] = true;
     }
     keyup(keyCode) {
@@ -1583,10 +1663,11 @@ class Battlefield {
 
 let zc = new Battlefield(1);
 document.onkeydown = (e) => {
-    zc.keydown(e.keyCode);
+    zc.keydown(e.code);
 }
 document.onkeyup = (e) => {
-    zc.keyup(e.keyCode);
+    zc.keyup(e.code);
+    zc.keyPress(e.code);
 }
 zc.msgCallBack = (arg) => {
     $("#pass").text(`第${arg.pass}关`);

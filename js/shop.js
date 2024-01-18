@@ -1,5 +1,4 @@
-import  { glb } from "./glb.js";
-import { FOOD } from "./food.js";
+import { FOOD,foodList } from "./food.js";
 export class SHOP {
     constructor(zc) {
         this.zc=zc;
@@ -23,11 +22,10 @@ export class SHOP {
     }
     make() {
         let ul = $("#shop .item-list");
-        for (let i = 1; i < glb.foodImg.length; i++) {
-            let data = FOOD.getDataByid(i);
-            if (data.hide) continue;
+        const list=foodList.map((item,i)=>{item.i=i;return item;}).filter(item=>!item.hide).sort((a,b)=>a.sort-b.sort);
+        for (const data of list) {
             let m = data.money >= 10000 ? `${data.money / 10000}万` : `${data.money / 1000}千`;
-            let li = `<li><img src="image/food/${i}.png" inx=${i}><p>${data.text}</p><p>$${m}</p></li>`;
+            let li = `<li><img src="image/food/${data.i}.png" inx=${data.i}><p>${data.text}</p><p>$${m}</p><p>快捷键：${data.sort}</p></li>`;
             ul.append(li);
 
         }

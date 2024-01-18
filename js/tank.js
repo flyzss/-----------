@@ -197,12 +197,6 @@ export class TANK {
             this.die();
             return;
         }
-        if(this.hp<=this.maxhp/4&&this.score>=FOOD.list[1].money){//如果血量低于1/4，并且积分大于10000，就购买一个加生命的道具
-            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: "购买加生命道具", color: "green", size: 30 });
-            this.score -= FOOD.list[1].money;
-            let food=new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act:1,who:this});
-            food.action(this);
-        }
         if (this.killCount >= 10) {//杀敌10个奖励1发炮弹
             this.boomCount++;
             this.killCount = 0;
@@ -214,7 +208,10 @@ export class TANK {
         }
         this.changeHp(Math.floor(this.maxhp * this.autoHuifu / 60 / 50));//自动恢复血量
         if (this.autoShoot) this.shoot();
-        if (this.isai) this.ai();
+        if (this.isai){ 
+            this.ai();
+            this.autoBuyHpFood();
+        }
         if (this.keystate["Numpad0"] || this.keystate["Space"] ) this.shoot1();
         if (this.keystate["ArrowLeft"] || this.keystate["KeyA"]) this.move(0);
         else if (this.keystate["ArrowUp"] || this.keystate["KeyW"]) this.move(1);
@@ -227,6 +224,14 @@ export class TANK {
         else if (direction == 1) y -= moveSpeed;
         else if (direction == 3) y += moveSpeed;
         return {x,y}
+    }
+    autoBuyHpFood(){//自动购买加血道具
+        if(this.hp<=this.maxhp/4&&this.score>=FOOD.list[1].money){//如果血量低于1/4，并且积分大于10000，就购买一个加生命的道具
+            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: "购买加生命道具", color: "green", size: 30 });
+            this.score -= FOOD.list[1].money;
+            let food=new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act:1,who:this});
+            food.action(this);
+        }
     }
     ai() {
         //if (Math.floor(Math.random() * 800) == 0) this.shoot1();//敌人有千分之一的概率发炮
@@ -327,7 +332,7 @@ export class TANK {
     zhongdu(){//中毒
         if(this.isDie) return;
         if(this.zhongduTimer)clearInterval(this.zhongduTimer);
-        this.zhongduCount=10;
+        this.zhongduCount=20;
         this.zhongduTimer = setInterval(()=>{
             this.changeHp(-this.maxhp*0.05);//每秒减少5%
             new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `中毒-${this.maxhp*0.05}`, color: "red", size: 40 });
@@ -346,6 +351,7 @@ export class TANK {
         this.isDie = true;
         if (this.handle) clearTimeout(this.handle);
         if(this.zhongduTimer)clearInterval(this.zhongduTimer);
+        this.zhongduCount=0;
         this.stop = 1;
         glb.playAudio("die");
         (async () => {//闪烁
@@ -357,7 +363,7 @@ export class TANK {
             }
             glb.tanklist[this.index] = 0;
             this.index = -1;
-            let jl = this.score >= 3000 ? Math.floor(Math.random() * FOOD.list.length) : Math.floor(Math.random() * 200);//积分大于3000必须有食物
+            let jl = this.score >= 3000 ? Math.floor(Math.random() * (FOOD.list.length-1)) : Math.floor(Math.random() * 200);//积分大于3000必须有食物
             let food = FOOD.list.map((v, i) => i)[jl + 1] || 0;//有几率产生食物
             if (food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: food, who });
         })();

@@ -3,25 +3,25 @@ import { PLANE } from "./plane.js";
 import { PROMPT } from "./prompt.js";
 import { BOOM } from "./boom.js";
 export const foodList=[
-    {},//0
-    { text: "回复生命", money: 20000, singleStr: '回血' },//1
+    {hide:true},//0
+    { text: "回复生命", money: 20000, singleStr: '回血' ,sort:1},//1
     { text: "玩家分数", money: 100000, hide: true, singleStr: '分' },//2
     { text: "攻击速度", money: 100000, singleStr: '攻速', hide: true },//3
     { text: "攻击伤害", money: 80000, singleStr: '伤害', hide: true },//9
     { text: "射程", money: 100000, singleStr: '射程', hide: true },//5
     { text: "移动速度", money: 100000, singleStr: '移速', hide: true },//6
-    { text: "炸裂子弹", money: 10000, singleStr: '炸裂' },//7
+    { text: "炸裂子弹", money: 10000, singleStr: '炸裂',sort:2 },//7
     { text: "炸矿", money: 4000, singleStr: '清矿', hide: true },//8
     { text: "空军支援", money: 100000, singleStr: '飞机', hide: true },//9
     { text: "暴击率", money: 80000, singleStr: '暴率', hide: true },//10
     { text: "暴击效果", money: 80000, singleStr: '爆伤', hide: true },//11
-    { text: "追踪弹", money: 10000, singleStr: '追踪' },//12
+    { text: "追踪弹", money: 10000, singleStr: '追踪',sort:3 },//12
     { text: "瞬移", money: 200000, singleStr: '瞬移', hide: true },//13
     { text: "吸血效率", money: 100000, singleStr: '吸血', hide: true },//14
     { text: "最大生命", money: 100000, singleStr: '体力', hide: true },//15
-    { text: "宝箱盲盒", money: 100000, singleStr: '盲盒' },//16
-    { text: "水晶护盾", money: 20000, singleStr: '保家' },//17
-    { text: "导弹", money: 20000, singleStr: '导弹' , hide: true},//18
+    { text: "宝箱盲盒", money: 100000, singleStr: '盲盒' ,sort:4},//16
+    { text: "水晶护盾", money: 20000, singleStr: '保家',sort:5 },//17
+    { text: "导弹", money: 30000, singleStr: '导弹' , sort:6},//18
     { text: "炸弹", money: 1, singleStr: '小心', hide: true },//19
     { text: "毒药", money: 1, singleStr: '中毒', hide: true },//20
     { text: "坦克零件", money: 100000, singleStr: '零件', hide: true },//21
@@ -173,7 +173,10 @@ export class FOOD {
             msg = `最大生命+25000`;
         }
         else if (this.act == 16) {
-            let act = ~~(Math.random() * FOOD.list.length - 1) + 1;
+            let act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
+            while ([19,20].includes(act)) {//宝箱里没有负面效果
+                act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
+            }
             msg = `打开了宝箱,获得了${FOOD.list[act].text}`;
             setTimeout(() => {
                 new FOOD({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, act, who: obj });
@@ -193,9 +196,9 @@ export class FOOD {
             obj.boomCount += 3;
         }
         else if (this.act == 19) {
-            msg = `真倒霉，踩中炸弹,被炸掉一半血量!`;
+            msg = `真倒霉，踩中炸弹,被炸掉大半血量!`;
             new BOOM({ xy: { x: obj.xy.x, y: obj.xy.y },width:obj.width,height:obj.height });
-            let sh=~~(obj.hp/2);
+            let sh=~~(obj.hp*0.8);
             obj.changeHp(-sh);
             new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: `被炸掉${sh}`, color: "red", size: 40 });
         }

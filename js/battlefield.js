@@ -385,6 +385,9 @@ export class Battlefield {
             'Digit5':()=>{
                 this.player1.shoping(17);//水晶盾
             },
+            'Digit6':()=>{
+                this.player1.shoping(18);//导弹
+            },
             'Numpad1':()=>{
                 this.player2.shoping(1);//生命
             },
@@ -400,6 +403,9 @@ export class Battlefield {
             'Numpad5':()=>{
                 this.player2.shoping(17);//水晶盾
             },
+            'Numpad6':()=>{
+                this.player2.shoping(18);//导弹
+            }
         }
         map[keyCode]&&map[keyCode]();
     }

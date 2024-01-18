@@ -52,7 +52,7 @@ export class TANK {
         if(this.preAnimationTime>0){
             this.stop=true;
             this.preAnimation();
-            glb.pause||glb.playAudio("kehuan",true,false,0.3);
+            glb.pause||glb.playAudio("kehuan",true,false,0.5);
         }
     }
     set moveSpeed(val) {

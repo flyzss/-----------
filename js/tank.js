@@ -253,8 +253,9 @@ export class TANK {
             }
             if(hit!==false) break;
         }
+        this.ignoringTargets=this.ignoringTargets||new Set();//忽视目标
 
-        if(hit!==false){//在射程内碰撞
+        if(hit!==false&&!this.ignoringTargets.has(hit.id)){//在射程内碰撞,并且不是忽视目标
 
             if(hit.type===glb.types.tank&&hit.belong!==this.belong&&hit.preAnimationTime<=0){//如果碰撞到敌方坦克并且没有动画
                 if(this.direction!==direction){
@@ -270,15 +271,30 @@ export class TANK {
                     this.move(direction)
                 }
                 this.shoot();
-                this.shoot1();//敌人有千分之一的概率发炮
+                this.shoot1();//导弹
                 return;
             }
             if(hit.type===glb.types.wall){//如果碰撞到墙
+                if(this.direction!==direction){
+                    this.move(direction)
+                }
                 this.shoot();
+                this.shootWallTryCount=this.shootWallTryCount||0;
+                this.shootWallTryCount++;
+                if(this.shootWallTryCount>100){
+                    this.shootWallTryCount=0;
+                    this.ignoringTargets.add(hit.id);//忽视目标
+                    setTimeout(()=>{this.ignoringTargets.delete(hit.id);},3000);//3秒后移除忽视目标
+                }
+                return;
             }
             if(hit.type===glb.types.food&&(!hit.who||hit.who.id==this.id)){//如果碰撞到食物
                 //console.log(`${this.name}碰撞食物${hit.act}`);
-                if (!this.move(direction)) this.direction = Math.floor(Math.random() * 4);//碰撞后随机换向
+                if (!this.move(direction)){//如果不能移动
+                    this.ignoringTargets.add(hit.id);//忽视目标
+                    setTimeout(()=>{this.ignoringTargets.delete(hit.id);},1000);//1秒后移除忽视目标
+                    this.direction = Math.floor(Math.random() * 4);//随机换向
+                }
                 this.shoot();
                 return;
             }

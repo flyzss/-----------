@@ -86,7 +86,7 @@ export const glb = {
         return true;
     },
     checkhit: function (obj) {
-        let list = ["tanklist", "walllist","foodlist",  'shuijinglist'];
+        let list = ["tanklist", "foodlist", 'shuijinglist',"walllist"];
         for (let j = 0; j < list.length; j++) {
             let arr = glb[list[j]];
             for (let i = 0, l = arr.length; i < l; i++) {

@@ -2,6 +2,7 @@ import  { glb } from "./glb.js";
 import { ZIDAN,MISSILE } from "./zidan.js";
 import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
+import { TANKBOOM } from "./boom.js";
 export class TANK {
     constructor(arg) {//(生命,外观,立场,位置,面向,ID) 立场=0无敌 1我方 其他敌方,面向0=left 1=up 2=right 3=down
         this.hp = arg.hp;
@@ -373,24 +374,11 @@ export class TANK {
         if(this.zhongduTimer)clearInterval(this.zhongduTimer);
         this.zhongduCount=0;
         this.stop = 1;
-        glb.playAudio("die");
-        (async () => {//闪烁
-            this.width *= 1.5;
-            this.height *= 2;
-            for (let i = 0; i < 4; i++) {
-                this.img = glb.tankboomImg[i]
-                await sleep(100);
-            }
-            glb.tanklist[this.index] = 0;
-            this.index = -1;
-            let jl = this.score >= 3000 ? Math.floor(Math.random() * (FOOD.list.length-1)) : Math.floor(Math.random() * 200);//积分大于3000必须有食物
-            let food = FOOD.list.map((v, i) => i)[jl + 1] || 0;//有几率产生食物
-            if (food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: food, who });
-        })();
+        glb.tanklist[this.index] = 0;
+        this.index = -1;
+        let jl = this.score >= 3000 ? Math.floor(Math.random() * (FOOD.list.length-1)) : Math.floor(Math.random() * 200);//积分大于3000必须有食物
+        let food = FOOD.list.map((v, i) => i)[jl + 1] || 0;//有几率产生食物
+        if (food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: food, who });
+        new TANKBOOM({ xy: { x: this.xy.x, y: this.xy.y }});
     }
-}
-function sleep(timeout)  {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => { resolve() }, timeout);
-    })
 }

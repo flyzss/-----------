@@ -1,4 +1,4 @@
-import  { glb } from "./glb.js";
+import { glb } from "./glb.js";
 import { TANK } from "./tank.js";
 import { PROMPT } from "./prompt.js";
 import { WALL } from "./wall.js";
@@ -17,6 +17,7 @@ export class Battlefield {
         this.bgm = new Audio('audio/bgm1.mp3');
         this.bgm.loop = true;
         this.bgm.volume = 1;
+        this.oppAllDie = false;
         setInterval(() => { this.msgCallBackfun() }, 500);
         this.looptimehandle = setInterval(() => { this.loop() }, 500);
     }
@@ -26,10 +27,10 @@ export class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: localStorage.getItem("p1name") || "P1" });
-        this.player2 = new TANK({ isPlayer: true,baojilv:0.05,baojishang:3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: localStorage.getItem("p2name") || "P2" });
+        this.player1 = new TANK({ isPlayer: true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: localStorage.getItem("p1name") || "P1" });
+        this.player2 = new TANK({ isPlayer: true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: localStorage.getItem("p2name") || "P2" });
         this.resetPos();
-        new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1,isPlayer: true, xy: { x: 550, y: 700 } });
+        new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 } });
     }
     set pass(val) {
         glb.pass = val;
@@ -60,19 +61,21 @@ export class Battlefield {
     }
     loop() {
         if (glb.pause) return;
-        let oppcount = 0, humcount = 0, foodcount = 0, oppshuijingcount = 0, humshuijingcount = 0;
+        let oppcount = 0, humcount = 0, oppshuijingcount = 0, humshuijingcount = 0;
         for (const shuijing of glb.shuijinglist) {
             if (shuijing) {
                 if (shuijing.belong == 2) oppshuijingcount++;
                 else if (shuijing.belong == 1) humshuijingcount++;
             }
         }
-        if (oppshuijingcount == 0) {//如果敌方水晶炸毁，炸毁所有敌方坦克
+        if (oppshuijingcount == 0 && !this.oppAllDie) {//如果敌方水晶炸毁，炸毁所有敌方坦克
             for (let i = 0, l = glb.tanklist.length; i < l; i++) {
                 if (glb.tanklist[i] && !glb.tanklist[i].isPlayer && glb.tanklist[i].type !== glb.types.plane) {
                     glb.tanklist[i].die();
                 }
             }
+            this.oppAllDie = true;
+            this.pass >= 1 && new PROMPT({ xy: { x: 431, y: glb.height / 2 - 164 / 2 }, img: glb.victoryimg, width: 418, height: 164, life: 100 })
         }
 
         for (let i = 0, l = glb.tanklist.length; i < l; i++) {
@@ -88,24 +91,34 @@ export class Battlefield {
 
             }
         }
-        for (let i = 0, l = glb.foodlist.length; i < l; i++) {
-            if (glb.foodlist[i] && glb.foodlist[i].act !== 13) foodcount++
-        }
         if (humshuijingcount == 0) {
             clearInterval(this.looptimehandle);
             this.player1.die();
             this.player2.die();
             this.bgm.pause();
             glb.pause = true;
-            this.gameOver=true;
+            this.gameOver = true;
             this.drawGameOver();
             setTimeout(() => {
-                const audio=new Audio('audio/gameover.mp3');
+                const audio = new Audio('audio/gameover.mp3');
                 audio.play();
-            },500);
-            return ;
+            }, 500);
+            return;
         }
-        if (oppcount == 0 && foodcount == 0) {
+        if (oppcount == 0) {
+            let foodcount = 0;
+            for (let i = 0, l = glb.foodlist.length; i < l; i++) {
+                if (glb.foodlist[i]){
+                    if([7,8,12,13,14,17,19,20].includes(glb.foodlist[i].act)){
+                        //glb.foodlist[i].die();
+                    }else{
+                        foodcount++//统计战场有多少食物，不算炸弹
+                    }
+                } 
+            }
+            if(foodcount > 0){
+                return;
+            }
             glb.pause = true;
             this.bgm.pause();
             for (let v of glb.zidanlist) {//防止子弹带入下一关
@@ -127,7 +140,7 @@ export class Battlefield {
             this.player1.tmp = {};
             this.player2.tmp = {};
             this.resetPos();
-            new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 1,isPlayer:true, xy: { x: 550, y: 700 }, exterior: 1 });
+            new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 }, exterior: 1 });
             new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 2, xy: { x: 550, y: 100 } });
             for (let i = 0; i < 7; i++) {//随机生成坦克
                 this.makeTank(null, null, { x: 0 + i * 120 + 50, y: 0 });
@@ -139,15 +152,19 @@ export class Battlefield {
                 new WALL({ hp: 1000 * Math.floor(Math.random() * 5) + this.pass * 100, food: FOOD.list.map((v, i) => i)[Math.floor(Math.random() * (150 + this.pass * 5)) + 1] || 0, xy: { x, y }, width: 60, height: 60 })
             }
             this.pass++;
+
             glb.playAudio("go");
             new PROMPT({
-                xy: { x: 300, y: glb.height / 2 }, msg: `第${this.pass}关，准备！`, color: "orange", size: 80, life: 80, onDie: () => {
+                xy: { x: 431, y: glb.height / 2 },ignorePause:true, msg: `第${this.pass}关，准备！`, color: "orange", size: 80, life: 80, onDie: () => {
                     new PROMPT({ xy: { x: glb.width / 2 - 200, y: glb.height / 2 }, msg: `开始!`, color: "orange", size: 120, life: 100 })
                     glb.pause = false;
                     this.bgm.currentTime = 0;
                     this.bgm.play();
+                    this.oppAllDie=false;
                 }
             });
+
+
         }
     }
     resetPos() {
@@ -286,11 +303,11 @@ export class Battlefield {
                 if (glb.checkhit({ xy, width: 60, height: 60 }) == false && glb.isin(xy.x, xy.y, 60, 60)) break;
             }
         }
-        if(fontColor==='purple'){
+        if (fontColor === 'purple') {
             glb.playAudio('warning')//强敌来袭警告
-            new PROMPT({ xy:{...xy}, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200});
+            new PROMPT({ xy: { ...xy }, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200 });
         }
-        return new TANK({ isPlayer,preAnimationTime:20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
+        return new TANK({ isPlayer, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
     }
     msgCallBackfun() {
         let arg = {
@@ -326,9 +343,9 @@ export class Battlefield {
     }
     drawAll() {
         //const timer = Date.now();
-        if(this.gameOver) return;
+        if (this.gameOver) return;
         this.clearBoard();
-        let list = ["walllist","shuijinglist",  "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist"];
+        let list = ["walllist", "shuijinglist", "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist"];
         list.forEach((v) => {
             let arr = glb[v];
             // let newarr = [];
@@ -351,9 +368,9 @@ export class Battlefield {
         glb.context.fillText(`FPS:${fps}`, 10, 20);
     }
     drawGameOver() {
-        const img=new Image();
-        img.src='image/biankuang/fail.jpg';
-        img.onload=()=>{
+        const img = new Image();
+        img.src = 'image/biankuang/fail.jpg';
+        img.onload = () => {
             glb.context.drawImage(img, 300, 200, 600, 270);
         }
         //glb.context.drawImage(img, 0, 0, glb.width, glb.height);
@@ -362,50 +379,50 @@ export class Battlefield {
         glb.context.fillText(`123`, 10, 20);
     }
     keyPress(keyCode) {//快捷键
-        const map={
-            'Digit1':()=>{
+        const map = {
+            'Digit1': () => {
                 this.player1.shoping(1);//生命
             },
-            'Digit2':()=>{
+            'Digit2': () => {
                 this.player1.shoping(7);//炸裂
             },
-            'Digit3':()=>{
+            'Digit3': () => {
                 this.player1.shoping(12);//追踪弹
             },
-            'Digit4':()=>{
+            'Digit4': () => {
                 this.player1.shoping(16);//宝箱
             },
-            'Digit5':()=>{
+            'Digit5': () => {
                 this.player1.shoping(17);//水晶盾
             },
-            'Digit6':()=>{
+            'Digit6': () => {
                 this.player1.shoping(18);//导弹
             },
-            'Numpad1':()=>{
+            'Numpad1': () => {
                 this.player2.shoping(1);//生命
             },
-            'Numpad2':()=>{
+            'Numpad2': () => {
                 this.player2.shoping(7);//炸裂
             },
-            'Numpad3':()=>{
+            'Numpad3': () => {
                 this.player2.shoping(12);//追踪弹
             },
-            'Numpad4':()=>{
+            'Numpad4': () => {
                 this.player2.shoping(16);//宝箱
             },
-            'Numpad5':()=>{
+            'Numpad5': () => {
                 this.player2.shoping(17);//水晶盾
             },
-            'Numpad6':()=>{
+            'Numpad6': () => {
                 this.player2.shoping(18);//导弹
             }
         }
-        map[keyCode]&&map[keyCode]();
+        map[keyCode] && map[keyCode]();
     }
     keydown(keyCode) {
-        if ( keyCode == 'KeyA' || keyCode == 'KeyS' || keyCode == 'KeyD' || keyCode == 'KeyW'||keyCode=='Space')
+        if (keyCode == 'KeyA' || keyCode == 'KeyS' || keyCode == 'KeyD' || keyCode == 'KeyW' || keyCode == 'Space')
             this.player1.keystate[keyCode] = true;
-        else if(keyCode == 'ArrowUp' || keyCode == 'ArrowDown' || keyCode == 'ArrowLeft' || keyCode == 'ArrowRight' ||keyCode=='Numpad0')
+        else if (keyCode == 'ArrowUp' || keyCode == 'ArrowDown' || keyCode == 'ArrowLeft' || keyCode == 'ArrowRight' || keyCode == 'Numpad0')
             this.player2.keystate[keyCode] = true;
     }
     keyup(keyCode) {

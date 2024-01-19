@@ -2,6 +2,7 @@ import  { glb } from "./glb.js";
 import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
 import {WALL} from "./wall.js"
+import { TANKBOOM } from "./boom.js";
 export class SHUIJING {
     constructor(obj) {
         this.exterior = obj.exterior || 0;
@@ -135,25 +136,12 @@ export class SHUIJING {
         if (this.isDie) return;
         this.isDie = true;
         glb.playAudio("die");
+        new TANKBOOM({ xy: { x: this.xy.x, y: this.xy.y } });
         glb.playAudio("glass");
-        (async () => {//闪烁
-            this.width *= 1.5;
-            this.height *= 2;
-            for (let i = 0; i < 4; i++) {
-                this.img = glb.tankboomImg[i]
-                await sleep(100);
-            }
-            if (glb.shuijinglist.length > this.index) glb.shuijinglist[this.index] = 0;
-            this.index = -1;
-
-        })();
+        if (glb.shuijinglist.length > this.index) glb.shuijinglist[this.index] = 0;
+        this.index = -1;
         if (this.food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: this.food, who });
         clearTimeout(this.timeout);
         //console.log(who);
     }
-}
-function sleep(timeout)  {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => { resolve() }, timeout);
-    })
 }

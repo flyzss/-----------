@@ -20,12 +20,18 @@ export const glb = {
     }),
     boomImg: [],
     tankboomImg: [],
+    tankboomImg1: new Array(5).fill(0).map((v, i) => {
+        v = new Image();
+        v.src = `image/tankboom/1/${i}.png`;
+        return v;
+    }),
     planeImg: [],
     zidanImg: [],
     foodImg: [],
     house: [],
     biankuangImg: [],
     wallimg1:new Image(),
+    victoryimg:new Image(),
     missileImg: new Array(8).fill(0).map((v, i) => {
         v = new Image();
         v.src = `image/skill/3/${i}.png`;
@@ -48,6 +54,7 @@ export const glb = {
     },
     makeTankimg: function () {
         this.wallimg1.src = `image/biankuang/wall1.png`;
+        this.victoryimg.src = `image/biankuang/victory.png`;
         for (let i = 0; i < 3; i++) {
             this.planeImg[i] = new Image();
             this.planeImg[i].src = `image/plane/${i}.png`

@@ -2,12 +2,15 @@ import { glb } from "./glb.js";
 export class PROMPT {//减血提示
     constructor(arg) {
         this.xy = arg.xy;
-        this.msg = arg.msg;
+        this.msg = arg.msg||'';
         this.color = arg.color;
         this.size = arg.size;
+        this.width = arg.width;
+        this.height = arg.height;
         this.life = arg.life || 50;
         this.moveCount = 0;
-        this.moveStep = 3;
+        this.moveStep = arg.moveStep || 3;
+        this.img = arg.img;
         this.onDie = arg.onDie || function () { };
         this.handle = setInterval(() => { this.loop() }, 50);
         this.index = glb.pushToArr(glb.promptlist, this);
@@ -17,13 +20,19 @@ export class PROMPT {//减血提示
         if (this.xy.y - this.life < 0) {
             this.xy.y = this.life;
         }
+        this.ignorePause = arg.ignorePause;
     }
     loop() {
+        if(glb.pause&&!this.ignorePause) return;
         this.moveCount += this.moveStep;
         this.xy.y -= this.moveStep;
         if (this.moveCount >= this.life) this.die();
     }
     drawme() {
+        if(this.img){
+            glb.context.drawImage(this.img, this.xy.x, this.xy.y, this.width, this.height);
+            return;
+        }
         //透明度
         glb.context.globalAlpha = 1 - this.moveCount / this.life;
         glb.context.fillStyle = this.color;

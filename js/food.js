@@ -136,7 +136,7 @@ export class FOOD {
         }
         else if (this.act == 8) {//清空所有墙
             for (let i = 0; i < glb.walllist.length; i++)
-                if (glb.walllist[i]) glb.walllist[i].die();//炸矿所得食物不属于任何人
+                if (glb.walllist[i]&&glb.walllist[i].belong===undefined) glb.walllist[i].die();//炸矿所得食物不属于任何人
             msg = `炸毁所有矿`;
         }
         else if (this.act == 9) {//空中支援

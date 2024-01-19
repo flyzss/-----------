@@ -91,13 +91,6 @@ export class Battlefield {
         for (let i = 0, l = glb.foodlist.length; i < l; i++) {
             if (glb.foodlist[i] && glb.foodlist[i].act !== 13) foodcount++
         }
-
-        for (let i = 0, l = glb.walllist.length; i < l; i++) {
-            if (glb.walllist[i]) {
-                if (glb.walllist[i].belong == 2) oppshuijingcount++;
-                else if (glb.walllist[i].belong == 1) humshuijingcount++;
-            }
-        }
         if (humshuijingcount == 0) {
             clearInterval(this.looptimehandle);
             this.player1.die();
@@ -159,7 +152,7 @@ export class Battlefield {
     }
     resetPos() {
         this.player1.xy = { x: 300, y: 740 };
-        this.player2.xy = { x: 700, y: 740 };
+        this.player2.xy = { x: 800, y: 740 };
     }
     killAll() {
         for (let i = 0, l = glb.tanklist.length; i < l; i++) {

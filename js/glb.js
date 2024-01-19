@@ -25,6 +25,7 @@ export const glb = {
     foodImg: [],
     house: [],
     biankuangImg: [],
+    wallimg1:new Image(),
     missileImg: new Array(8).fill(0).map((v, i) => {
         v = new Image();
         v.src = `image/skill/3/${i}.png`;
@@ -46,6 +47,7 @@ export const glb = {
         return !(x < 0 || y < 0 || x > this.width - width || y > this.height - height);
     },
     makeTankimg: function () {
+        this.wallimg1.src = `image/biankuang/wall1.png`;
         for (let i = 0; i < 3; i++) {
             this.planeImg[i] = new Image();
             this.planeImg[i].src = `image/plane/${i}.png`
@@ -154,6 +156,7 @@ export const glb = {
         attackShuijing: [],
         kehuan: [],
         warning: [],
+        glass: [],
         die: []
     },
     playAudio(name, autoPlay = true, loop = false, volume = 1,max=Infinity) {

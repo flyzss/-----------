@@ -274,7 +274,7 @@ export class TANK {
                 this.shoot1();//导弹
                 return;
             }
-            if(hit.type===glb.types.wall){//如果碰撞到墙
+            if(hit.type===glb.types.wall&&hit.belong!==this.belong){//如果碰撞到墙
                 if(this.direction!==direction){
                     this.move(direction)
                 }

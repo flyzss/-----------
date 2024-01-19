@@ -1,6 +1,7 @@
 import  { glb } from "./glb.js";
 import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
+import {WALL} from "./wall.js"
 export class SHUIJING {
     constructor(obj) {
         this.exterior = obj.exterior || 0;
@@ -10,8 +11,8 @@ export class SHUIJING {
         this.xy = obj.xy;
         this.isPlayer = obj.isPlayer||false;
         this.id = obj.id || Math.random();
-        this.width = obj.width || 80;
-        this.height = obj.height || 80;
+        this.width = obj.width || 120;
+        this.height = obj.height || 120;
         this.type = glb.types.shuijing;
         this.food = obj.food || 1;
         this.belong = obj.belong;
@@ -20,6 +21,7 @@ export class SHUIJING {
         this.hudunTimeOut = 0;
         this.isDie = false;
         this.index = glb.pushToArr(glb.shuijinglist, this);
+        this.makeClosure();
         this.loop();
 
     }
@@ -32,7 +34,7 @@ export class SHUIJING {
             glb.context.drawImage(glb.foodImg[17], x, y, this.width, this.height);
             glb.context.fillStyle = 'red';
             glb.context.font = '20px Arial';
-            glb.context.fillText(this.hudunTimeOut, x + this.width / 2, y + this.height / 2);
+            glb.context.fillText(this.hudunTimeOut, x + this.width / 2-this.hudunTimeOut.toString().length*10/2, y + this.height / 2);
         }
         if (this.hp > 0) {// 画血条
             const color=this.belong===1?"green":"red";
@@ -42,7 +44,29 @@ export class SHUIJING {
             glb.context.strokeRect(x, y + 5, this.width, 5);
             glb.context.fillStyle = color;
             glb.context.font = '14px Arial';
-            glb.context.fillText(Math.floor(this.hp), x-14, y);
+            glb.context.fillText(Math.floor(this.hp), x, y);
+        }
+    }
+    makeClosure(){//修建围墙
+        const width=40,height=40;
+        let {x,y}=this.xy;
+        x-=width;y-=height;
+        const hp=this.hp/20;
+        while(x<this.xy.x+this.width){
+            new WALL({xy:{x,y},width,height,belong:this.belong,hp,img:glb.wallimg1});
+            x+=width;
+        }
+        while(y<this.xy.y+this.height){
+            new WALL({xy:{x,y},width,height,belong:this.belong,hp,img:glb.wallimg1});
+            y+=height;
+        }
+        while(x>this.xy.x-width){
+            new WALL({xy:{x,y},width,height,belong:this.belong,hp,img:glb.wallimg1});
+            x-=width;
+        }
+        while(y>this.xy.y-height){
+            new WALL({xy:{x,y},width,height,belong:this.belong,hp,img:glb.wallimg1});
+            y-=height;
         }
     }
     hudun() {//获得护盾
@@ -111,6 +135,7 @@ export class SHUIJING {
         if (this.isDie) return;
         this.isDie = true;
         glb.playAudio("die");
+        glb.playAudio("glass");
         (async () => {//闪烁
             this.width *= 1.5;
             this.height *= 2;

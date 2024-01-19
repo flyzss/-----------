@@ -11,12 +11,18 @@ export class WALL {
         this.height = obj.height || 40;
         this.type = glb.types.wall;
         this.food = obj.food;
+        this.belong = obj.belong;
         this.isDie = false;
+        this.img=obj.img;
         this.index = glb.pushToArr(glb.walllist, this);
 
 
     }
     drawme() {
+        if(this.img){
+            glb.context.drawImage(this.img, this.xy.x, this.xy.y, this.width, this.height);
+            return;
+        }
         const rgb = [
             "#1c1c1c",
             "#383838",
@@ -33,6 +39,7 @@ export class WALL {
     }
     zhongdan(zidan) {
         //console.log(zidan.who);
+        if(this.belong==zidan.who.belong)return;
         if (this.isDie) return;
         if (this.hp <= 0) return this.die(zidan.isPlane ? null : zidan.who);//飞机的子弹爆出的食物没有归属权
         //if(zidan.belong==1)console.log(this.hp);

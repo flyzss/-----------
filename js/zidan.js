@@ -74,7 +74,7 @@ export class ZIDAN {
         }
         if (this.moveCount > Math.min(this.far,glb.width)) return this.die();//有效射程
         this.xy = { x, y };
-        let hit = glb.checkhit(this);
+        let hit = glb.checkhit(this,["tanklist", 'shuijinglist',"walllist"]);
         if (hit) hit.zhongdan(this);
     }
     drawme() {

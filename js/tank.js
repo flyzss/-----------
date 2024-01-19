@@ -263,7 +263,7 @@ export class TANK {
                 }
                 //console.log(`${this.name}敌方坦克碰撞${hit.name}`);
                 this.shoot();
-                this.shoot1();//敌人有千分之一的概率发炮
+                this.shoot1();//导弹
                 return;
             }
             if(hit.type===glb.types.shuijing&&hit.isPlayer!==this.isPlayer&&hit.belong!==this.belong){//如果碰撞到水晶
@@ -281,6 +281,10 @@ export class TANK {
                 this.shoot();
                 this.shootWallTryCount=this.shootWallTryCount||0;
                 this.shootWallTryCount++;
+                if(this.targetWallId!==hit.id) {
+                    this.shootWallTryCount=0;
+                    this.targetWallId=hit.id;//记录目标
+                }
                 if(this.shootWallTryCount>100){
                     this.shootWallTryCount=0;
                     this.ignoringTargets.add(hit.id);//忽视目标

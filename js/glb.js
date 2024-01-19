@@ -85,8 +85,7 @@ export const glb = {
         //console.log(a,b);
         return true;
     },
-    checkhit: function (obj) {
-        let list = ["tanklist", "foodlist", 'shuijinglist',"walllist"];
+    checkhit: function (obj,list= ["tanklist", "foodlist", 'shuijinglist',"walllist"]) {
         for (let j = 0; j < list.length; j++) {
             let arr = glb[list[j]];
             for (let i = 0, l = arr.length; i < l; i++) {

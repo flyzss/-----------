@@ -12,6 +12,8 @@ export class Battlefield {
         glb.makeBoomimg();
         this.pass = 0;
         this.playerCount = playerCount;
+        this.player1DefultName = localStorage.getItem("p1name") || "P1";
+        this.player2DefultName = localStorage.getItem("p2name") || "P2";
         this.init();
         this.drawAll();
         this.bgm = new Audio('audio/bgm1.mp3');
@@ -27,8 +29,8 @@ export class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: localStorage.getItem("p1name") || "P1" });
-        this.player2 = new TANK({ isPlayer: true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: localStorage.getItem("p2name") || "P2" });
+        this.player1 = new TANK({ isPlayer: true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
+        this.player2 = new TANK({ isPlayer: true,isAutoBuyHp:true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
         this.resetPos();
         new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 } });
     }
@@ -184,6 +186,7 @@ export class Battlefield {
                     sh: 5,
                     moveSpeed: 2,
                     boomCount: 5,
+                    isAutoBuyHp: true,
                     //zhuizongdan: 1,
                     belong: 1,
                     hp: 20,
@@ -192,11 +195,11 @@ export class Battlefield {
                     name: "搞笑的",
                     sh: 0.1,
                     score: 100,
-                    moveSpeed: 0.2
+                    moveSpeed: -0.6
                 },
                 {
                     name: "嗑药的",
-                    moveSpeed: 3,
+                    moveSpeed: 2,
                     score: 3000,
                     fontColor: "purple",
                     shootSpeed: 800,
@@ -207,7 +210,7 @@ export class Battlefield {
                 },
                 {
                     name: "慢悠悠的",
-                    moveSpeed: 0.1
+                    moveSpeed: -0.6
                 },
                 {
                     name: "敏捷的",
@@ -226,7 +229,7 @@ export class Battlefield {
                 },
                 {
                     name: "疯狂的",
-                    moveSpeed: 3,
+                    moveSpeed: 2,
                     hp: 12,
                     fontColor: "purple",
                     score: 3000,
@@ -238,12 +241,14 @@ export class Battlefield {
                 },
                 {
                     name: "狙击手",
-                    shootFar: 5,
+                    shootFar: 1500,
+                    shootSpeed:-2000,
                     zhuizongdan: 1,
                     score: 3000,
+                    baojilv:1,//暴击率100%
                     fontColor: "purple",
                     boomCount: 1,
-                    sh: 0.5
+                    sh: 2
                 },
                 {
                     name: "坚硬的",
@@ -263,17 +268,18 @@ export class Battlefield {
                     fontColor: "purple",
                     score: 3000,
                     sh: 5,
-                    moveSpeed: 2,
+                    moveSpeed: 1.5,
                     beiong: 13
                 },
                 {
-                    name: "难搞的",
+                    name: "会购物的",
                     hp: 10,
                     boomCount: 1,
                     fontColor: "purple",
-                    score: 3000,
+                    score: 10000,
                     sh: 3,
-                    moveSpeed: 2,
+                    isAutoBuyHp: true,
+                    moveSpeed: 1.5,
                     beiong: 2
                 }
             ]
@@ -284,19 +290,20 @@ export class Battlefield {
         };
         let size = 50;
         let ch = getChenghhao();
-        let shootFar = (200 + this.pass * 2) * (ch.shootFar || 1);
-        let shootSpeed = 1000 - (this.pass * 2 + (ch.shootSpeed || 1));
+        let shootFar = (200 + this.pass * 2) + (ch.shootFar || 0);
+        let shootSpeed = 1000 - (ch.shootSpeed||this.pass * 2 );
         let hp = (1500 + this.pass * 500) * (ch.hp || 1);
         let sh = (1000 + this.pass * 70) * (ch.sh || 1);
         let boomCount = ch.boomCount || 0;
         let score = (ch.score || 500);
         let belong = bl || (ch.belong || 2);
-        let moveSpeed = (1 + this.pass * 0.01) * (ch.moveSpeed || 1);
+        let moveSpeed = (1 + this.pass * 0.01) + (ch.moveSpeed || 0);
         let baojilv = 0.01 + this.pass * 0.002 + (ch.baojilv || 0);
         let baojishang = 2 + this.pass * 0.01;
         let fontColor = ch.fontColor || "white";
         let chenghao = ch.name || "";
         let zhuizongdan = ch.zhuizongdan || 0;
+        let isAutoBuyHp = ch.isAutoBuyHp || false;
         if (!xy) {
             while (true) {
                 xy = { x: Math.round(Math.random() * glb.width), y: Math.round(Math.random() * glb.height) };
@@ -307,7 +314,7 @@ export class Battlefield {
             glb.playAudio('warning')//强敌来袭警告
             new PROMPT({ xy: { ...xy }, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200 });
         }
-        return new TANK({ isPlayer, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
+        return new TANK({ isPlayer,isAutoBuyHp, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
     }
     msgCallBackfun() {
         let arg = {
@@ -415,6 +422,9 @@ export class Battlefield {
             },
             'Numpad6': () => {
                 this.player2.shoping(18);//导弹
+            },
+            'Pause':()=>{
+                this.pause(!glb.pause);
             }
         }
         map[keyCode] && map[keyCode]();

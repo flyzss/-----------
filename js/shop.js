@@ -25,7 +25,7 @@ export class SHOP {
         const list=foodList.map((item,i)=>{item.i=i;return item;}).filter(item=>!item.hide).sort((a,b)=>a.sort-b.sort);
         for (const data of list) {
             let m = data.money >= 10000 ? `${data.money / 10000}万` : `${data.money / 1000}千`;
-            let li = `<li><img src="image/food/${data.i}.png" inx=${data.i}><p>${data.text}</p><p>$${m}</p><p>快捷键：${data.sort}</p></li>`;
+            let li = `<li><img src="image/food/${data.i}.png" inx=${data.i}><p>${data.text}</p><p>$${m}</p><p>快捷键：${data.sort||'无'}</p></li>`;
             ul.append(li);
 
         }
@@ -64,13 +64,14 @@ export class SHOP {
             let inx = $(v).attr("inx");
             p2.push(~~inx);
         });
+        SHOP.cancel(zc);
         for (let i = 0; i < p1.length; i++) {
             zc.player1.shoping(p1[i]);
         }
         for (let i = 0; i < p2.length; i++) {
             zc.player2.shoping(p2[i]);
         }
-        SHOP.cancel();
+        
     }
     static cancel(zc) {
         $("#shop").hide();

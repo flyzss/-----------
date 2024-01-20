@@ -40,6 +40,9 @@ zc.msgCallBack = (arg) => {
 
 
 $(() => {
+
+        $("#p1name").val(zc.player1DefultName);
+        $("#p2name").val(zc.player2DefultName);
     $("#start").click(() => {
         location.reload();
         $("#pause").text("暂停");
@@ -61,13 +64,14 @@ $(() => {
     $("#playercount").change(function () {
         let val = ~~$(this).val();
         zc.player2.isai = val == 1 ? 1 : 0;
+        zc.player2.isAutoBuyHp = val == 1 ? true : false;
         zc.playerCount = val;
     });
     $("#btn_save").click(function () {
         let p1name = $("#p1name").val();
         let p2name = $("#p2name").val();
-        if (p1name == "") p1name = "P1";
-        if (p2name == "") p2name = "P2";
+        if (p1name == "") p1name = zc.player1DefultName;
+        if (p2name == "") p2name = zc.player2DefultName;
         zc.player1.name = p1name;
         zc.player2.name = p2name;
         localStorage.setItem("p1name", p1name);

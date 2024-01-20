@@ -186,3 +186,9 @@ export const glb = {
         return glb.audioPool[name][glb.audioPool[name].length - 1];
     }
 }
+
+export function sleep(timeout) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => { resolve() }, timeout);
+    })
+}

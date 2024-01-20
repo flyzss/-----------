@@ -1,17 +1,17 @@
-import  { glb } from "./glb.js";
+import  { glb,sleep } from "./glb.js";
 import { PLANE } from "./plane.js";
 import { PROMPT } from "./prompt.js";
 import { BOOM } from "./boom.js";
 export const foodList=[
     {hide:true},//0
-    { text: "回复生命", money: 20000, singleStr: '回血' ,sort:1},//1
+    { text: "回复生命", money: 3000, singleStr: '回血' ,sort:1},//1
     { text: "玩家分数", money: 100000, hide: true, singleStr: '分' },//2
     { text: "攻击速度", money: 100000, singleStr: '攻速', hide: true },//3
     { text: "攻击伤害", money: 80000, singleStr: '伤害', hide: true },//9
     { text: "射程", money: 100000, singleStr: '射程', hide: true },//5
     { text: "移动速度", money: 100000, singleStr: '移速', hide: true },//6
     { text: "炸裂子弹", money: 10000, singleStr: '炸裂',sort:2 },//7
-    { text: "炸矿", money: 4000, singleStr: '清矿', hide: true },//8
+    { text: "炸矿", money: 1, singleStr: '清矿', hide:true},//8
     { text: "空军支援", money: 100000, singleStr: '飞机', hide: true },//9
     { text: "暴击率", money: 80000, singleStr: '暴率', hide: true },//10
     { text: "暴击效果", money: 80000, singleStr: '爆伤', hide: true },//11
@@ -106,8 +106,8 @@ export class FOOD {
         let msg = 0;
         glb.playAudio("pick");
         if (this.act == 1) {
-            let hp = ~~(obj.maxhp - obj.hp);
-            obj.hp = obj.maxhp;
+            let hp =100000 //~~(obj.maxhp - obj.hp);
+            obj.hp +=hp;//obj.maxhp;
             msg = `生命值+${hp}`
         }
         else if (this.act == 2) {
@@ -135,8 +135,16 @@ export class FOOD {
             msg = `使用炸裂弹`;
         }
         else if (this.act == 8) {//清空所有墙
-            for (let i = 0; i < glb.walllist.length; i++)
-                if (glb.walllist[i]&&glb.walllist[i].belong===undefined) glb.walllist[i].die();//炸矿所得食物不属于任何人
+            (async () => {
+                for (const wall of glb.walllist) {
+                    if (wall&&wall.belong===undefined){
+                        wall.die();//炸矿所得食物不属于任何人
+                        new BOOM({ xy: { x: wall.xy.x, y: wall.xy.y },width:wall.width,height:wall.height });
+                        await sleep(10);
+                    }
+                }
+            })()
+
             msg = `炸毁所有矿`;
         }
         else if (this.act == 9) {//空中支援
@@ -170,7 +178,7 @@ export class FOOD {
         else if (this.act == 15) {
             obj.maxhp += 25000;
             obj.hp = obj.maxhp;
-            msg = `最大生命+25000`;
+            msg = `最大生命+25000,并回满血。`;
         }
         else if (this.act == 16) {
             let act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
@@ -198,7 +206,7 @@ export class FOOD {
         else if (this.act == 19) {
             msg = `真倒霉，踩中炸弹,被炸掉大半血量!`;
             new BOOM({ xy: { x: obj.xy.x, y: obj.xy.y },width:obj.width,height:obj.height });
-            let sh=~~(obj.hp*0.8);
+            let sh=~~(obj.hp*0.9);
             obj.changeHp(-sh);
             new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: `被炸掉${sh}`, color: "red", size: 40 });
         }

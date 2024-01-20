@@ -32,6 +32,7 @@ export class TANK {
         this.arg = arg;
         this.eatFoodCount = 0;//吃食物计数器
         this.isPlayer = arg.isPlayer || false;
+        this.isAutoBuyHp=arg.isAutoBuyHp||false;//是否自动购买血包
         this.killCount = 0;//杀敌计数器，10个敌人奖励1发炮弹
         this.boomCount = arg.boomCount || 0;
         this.boomTimeOut = 0;
@@ -209,9 +210,9 @@ export class TANK {
         }
         this.changeHp(Math.floor(this.maxhp * this.autoHuifu / 60 / 50));//自动恢复血量
         if (this.autoShoot) this.shoot();
+        this.autoBuyHpFood();
         if (this.isai){ 
-            this.ai();
-            this.autoBuyHpFood();
+            this.ai();     
         }
         if (this.keystate["Numpad0"] || this.keystate["Space"] ) this.shoot1();
         if (this.keystate["ArrowLeft"] || this.keystate["KeyA"]) this.move(0);
@@ -227,6 +228,7 @@ export class TANK {
         return {x,y}
     }
     autoBuyHpFood(){//自动购买加血道具
+        if(!this.isAutoBuyHp)return;
         if(this.hp<=this.maxhp/4&&this.score>=FOOD.list[1].money){//如果血量低于1/4，并且积分大于10000，就购买一个加生命的道具
             new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: "购买加生命道具", color: "green", size: 30 });
             this.score -= FOOD.list[1].money;
@@ -315,7 +317,7 @@ export class TANK {
         if (!glb.isin(x, y, this.width, this.height)) return false;//边界检查
         let oldxy = this.xy;
         this.xy = { x, y };
-        let hit = glb.checkhit(this);//碰撞检查
+        let hit = glb.checkhit(this, ["tanklist", "walllist", 'shuijinglist','foodlist']);//碰撞检查
         if (!hit) return true;
         if (hit.type == glb.types.tank || hit.type == glb.types.wall||hit.type == glb.types.shuijing) {//如果碰撞到墙或者坦克
             this.xy = oldxy;

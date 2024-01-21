@@ -356,9 +356,10 @@ export class TANK {
         if(this.isDie) return;
         if(this.zhongduTimer)clearInterval(this.zhongduTimer);
         this.zhongduCount=20;
+        let how=0.05;
         this.zhongduTimer = setInterval(()=>{
-            this.changeHp(-this.maxhp*0.05);//每秒减少5%
-            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `中毒-${this.maxhp*0.05}`, color: "red", size: 40 });
+            this.changeHp(-this.maxhp*how);//每秒减少5%
+            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `中毒-${this.maxhp*how}`, color: "red", size: 40 });
             this.zhongduCount--;
             if(this.zhongduCount<=0){
                 clearInterval(this.zhongduTimer);

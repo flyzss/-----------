@@ -118,12 +118,7 @@ export class MISSILE extends ZIDAN {//导弹
         this.drawmeRunCount = 0;
     }
     drawme() {
-        let direction = this.direction;
-        let angel = 0;
-        if (direction == 0) { angel = 0 }
-        else if (direction == 2) { angel = 180 }
-        else if (direction == 1) { angel = 90 }
-        else if (direction == 3) { angel = 270 }
+        let angel = [0, 90, 180, 270][this.direction];
         let { x, y } = this.xy;
         let px = x + this.width / 2, py = y + this.height / 2;
         this.imgIndex=++this.imgIndex%this.imgList.length;

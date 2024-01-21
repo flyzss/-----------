@@ -132,18 +132,20 @@ export class Battlefield {
             glb.foodlist = [];
             glb.shuijinglist = [];
             if (this.player1.index == -1) {
-                this.player1.hp = this.player1.maxhp / 2;
+                this.player1.hp = 1;
+                this.player1.changeScore(-10000);
                 this.player1.repush();
             }
             if (this.player2.index == -1) {
-                this.player2.hp = this.player2.maxhp / 2;
+                this.player2.hp = 1;
+                this.player1.changeScore(-10000);
                 this.player2.repush();
             }
             this.player1.tmp = {};
             this.player2.tmp = {};
             this.resetPos();
             new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 }, exterior: 1 });
-            new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 2, xy: { x: 550, y: 100 } });
+            new SHUIJING({ hp: 50000 + this.pass * 50000, belong: 2, xy: { x: 550, y: 100 } });
             for (let i = 0; i < 7; i++) {//随机生成坦克
                 this.makeTank(null, null, { x: 0 + i * 120 + 50, y: 0 });
             }
@@ -195,7 +197,8 @@ export class Battlefield {
                     name: "搞笑的",
                     sh: 0.1,
                     score: 100,
-                    moveSpeed: -0.6
+                    moveSpeed: -0.6,
+                    poisonZidan:true,
                 },
                 {
                     name: "嗑药的",
@@ -203,14 +206,23 @@ export class Battlefield {
                     score: 3000,
                     fontColor: "purple",
                     shootSpeed: 800,
+                    hp:20,
                 },
                 {
-                    name: "大聪明",
+                    name: "炸弹狂人",
+                    moveSpeed: 2,
+                    score: 3000,
+                    fontColor: "purple",
+                    hp:30,
+                    boomCount: 1,
+                    sh:4,
+                    buffNameList: ["炸弹制造"],
                     belong: 12//攻击自己人
                 },
                 {
                     name: "慢悠悠的",
-                    moveSpeed: -0.6
+                    moveSpeed: -0.6,
+                    poisonZidan:true,
                 },
                 {
                     name: "敏捷的",
@@ -220,7 +232,7 @@ export class Battlefield {
                 {
                     name: "死神",
                     moveSpeed: 2,
-                    hp: 10,
+                    hp: 30,
                     fontColor: "purple",
                     score: 3000,
                     boomCount: 1,
@@ -230,7 +242,7 @@ export class Battlefield {
                 {
                     name: "疯狂的",
                     moveSpeed: 2,
-                    hp: 12,
+                    hp: 20,
                     fontColor: "purple",
                     score: 3000,
                     baojilv: 0.1,
@@ -248,7 +260,8 @@ export class Battlefield {
                     baojilv:1,//暴击率100%
                     fontColor: "purple",
                     boomCount: 1,
-                    sh: 2
+                    hp:20,
+                    sh: 3
                 },
                 {
                     name: "坚硬的",
@@ -259,11 +272,11 @@ export class Battlefield {
                     name: "超级坚硬的",
                     fontColor: "purple",
                     score: 3000,
-                    hp: 13
+                    hp: 40
                 },
                 {
                     name: "噩梦的",
-                    hp: 10,
+                    hp: 30,
                     boomCount: 2,
                     fontColor: "purple",
                     score: 3000,
@@ -280,6 +293,18 @@ export class Battlefield {
                     sh: 3,
                     isAutoBuyHp: true,
                     moveSpeed: 1.5,
+                    beiong: 2
+                },
+                {
+                    name: "毒气大师",
+                    hp: 30,
+                    shootFar: 500,
+                    boomCount: 1,
+                    fontColor: "purple",
+                    score: 10000,
+                    buffNameList: ["毒药制造"],
+                    poisonZidan:true,
+                    moveSpeed: 2,
                     beiong: 2
                 }
             ]
@@ -304,6 +329,8 @@ export class Battlefield {
         let chenghao = ch.name || "";
         let zhuizongdan = ch.zhuizongdan || 0;
         let isAutoBuyHp = ch.isAutoBuyHp || false;
+        let poisonZidan = ch.poisonZidan || false;
+        let buffNameList=ch.buffNameList||[];
         if (!xy) {
             while (true) {
                 xy = { x: Math.round(Math.random() * glb.width), y: Math.round(Math.random() * glb.height) };
@@ -314,7 +341,7 @@ export class Battlefield {
             glb.playAudio('warning')//强敌来袭警告
             new PROMPT({ xy: { ...xy }, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200 });
         }
-        return new TANK({ isPlayer,isAutoBuyHp, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
+        return new TANK({ isPlayer,buffNameList,poisonZidan,isAutoBuyHp, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
     }
     msgCallBackfun() {
         let arg = {
@@ -352,7 +379,7 @@ export class Battlefield {
         //const timer = Date.now();
         if (this.gameOver) return;
         this.clearBoard();
-        let list = ["walllist", "shuijinglist", "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist"];
+        let list = ["walllist", "shuijinglist", "foodlist", "tanklist", "zidanlist", "boomlist", "promptlist","buffList"];
         list.forEach((v) => {
             let arr = glb[v];
             // let newarr = [];

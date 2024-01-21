@@ -10,7 +10,7 @@ export class ZIDAN {
         this.belong = arg.belong;
         this.exterior = arg.exterior;
         this.direction = arg.direction;
-        this.moveSpeed = arg.moveSpeed || 10;
+        this.moveSpeed = arg.moveSpeed || 20;
         this.type = glb.types.zidan;
         this.isDie = false;
         this.baojilv = arg.baojilv || 0.01;
@@ -75,7 +75,9 @@ export class ZIDAN {
         if (this.moveCount > Math.min(this.far,glb.width)) return this.die();//有效射程
         this.xy = { x, y };
         let hit = glb.checkhit(this,["tanklist","walllist", 'shuijinglist']);
-        if (hit) hit.zhongdan(this);
+        if (hit) {
+            hit.zhongdan(this);
+        }
     }
     drawme() {
         let { x, y } = this.xy;
@@ -131,29 +133,19 @@ export class MISSILE extends ZIDAN {//导弹
         glb.context.restore();//恢复状态
     }
 }
-export class POISON extends MISSILE {//导弹
+export class POISON extends MISSILE {//毒气弹
     constructor(arg) {
         super(arg);
-        this.imgList=glb.missileImg;
+        this.imgList=glb.methysisImg;
         this.imgIndex = 0;
         this.drawmeRunCount = 0;
+        this.sh=500;
+        this.moveSpeed=3;
+        this.isPoison=true;
+        this.maxsh=500;
+        this.width=30;
+        this.height=30;
+        this.zhalie=false;
     }
-    drawme() {
-        let direction = this.direction;
-        let angel = 0;
-        if (direction == 0) { angel = 0 }
-        else if (direction == 2) { angel = 180 }
-        else if (direction == 1) { angel = 90 }
-        else if (direction == 3) { angel = 270 }
-        let { x, y } = this.xy;
-        let px = x + this.width / 2, py = y + this.height / 2;
-        this.imgIndex=++this.imgIndex%this.imgList.length;
-        this.drawmeRunCount++;
-        glb.context.save();//保存状态
-        glb.context.translate(px, py);//设置画布上的(0,0)位置，也就是旋转的中心点
-        glb.context.rotate(angel * Math.PI / 180);
-        glb.context.translate(-px, -py);//设置画布上的(0,0)位置，也就是旋转的中心点
-        glb.context.drawImage(this.imgList[this.imgIndex], x, y, this.width, this.height);//把图片绘制在旋转的中心点，
-        glb.context.restore();//恢复状态
-    }
+    
 }

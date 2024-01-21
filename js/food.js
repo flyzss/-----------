@@ -2,6 +2,7 @@ import  { glb,sleep } from "./glb.js";
 import { PLANE } from "./plane.js";
 import { PROMPT } from "./prompt.js";
 import { BOOM } from "./boom.js";
+import { DEBUFF_methysis } from "./buff.js";
 export const foodList=[
     {hide:true},//0
     { text: "回复生命", money: 3000, singleStr: '回血' ,sort:1},//1
@@ -23,7 +24,7 @@ export const foodList=[
     { text: "水晶护盾", money: 20000, singleStr: '保家',sort:5 },//17
     { text: "导弹", money: 30000, singleStr: '导弹' , sort:6},//18
     { text: "炸弹", money: 1, singleStr: '小心', hide: true },//19
-    { text: "毒药", money: 1, singleStr: '中毒', hide: true },//20
+    { text: "毒药", money: 1, singleStr: '中毒', },//20
     { text: "坦克零件", money: 100000, singleStr: '零件', hide: true },//21
 ]
 export class FOOD {
@@ -212,7 +213,7 @@ export class FOOD {
         }
         else if (this.act == 20) {
             msg = `真倒霉，吃了一口毒药，中毒了!`;
-            obj.zhongdu();
+            new DEBUFF_methysis({tank:obj})
         }
         else if (this.act == 21) {
             msg = `坦克零件，每分钟自动回血能力+1%`;

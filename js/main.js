@@ -3,7 +3,7 @@ import { Battlefield } from "./battlefield.js";
 import { SHOP } from "./shop.js";
 
 
-const zc = new Battlefield(1);
+const zc = new Battlefield(2);
 const shop = new SHOP(zc);
 document.onkeydown = (e) => {
     zc.keydown(e.code);

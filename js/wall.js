@@ -54,9 +54,7 @@ export class WALL {
         //if(zidan.belong==1)console.log(this.hp);
         zidan.sh -= hp;
         if (this.hp <= 0) {
-            this.die(zidan.isPlane ? null : zidan.who);//飞机的子弹爆出的食物没有归属权
-            zidan.who.changeScore(50);
-            zidan.who.killCount+=0.334;//杀敌计数器,每个方块=0.3个敌人
+            this.die(zidan.isPlane ? undefined : zidan.who);//飞机的子弹爆出的食物没有归属权
         };
         if (zidan.sh <= 0) zidan.die();
         zidan.boom(this);
@@ -67,6 +65,11 @@ export class WALL {
         this.isDie = true;
         if (glb.walllist.length > this.index) glb.walllist[this.index] = 0;
         if (this.food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: this.food, who });
+        if(who){
+            who.changeScore(50);
+            who.killCount+=0.334;//杀敌计数器,每个方块=0.3个敌人            
+        }
+
         //console.log(who);
     }
 }

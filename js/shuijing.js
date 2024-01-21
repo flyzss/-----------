@@ -52,7 +52,7 @@ export class SHUIJING {
         const width=40,height=40;
         let {x,y}=this.xy;
         x-=width;y-=height;
-        const hp=this.hp/20;
+        const hp=this.hp/10;
         while(x<this.xy.x+this.width){
             new WALL({xy:{x,y},width,height,belong:this.belong,hp,img:glb.wallimg1});
             x+=width;
@@ -126,7 +126,6 @@ export class SHUIJING {
         obj.sh -= hp;
         if (this.hp <= 0) {
             this.die(obj.who);
-            obj.who.changeScore(3000);
         };
         if (obj.sh <= 0) obj.die();
         obj.boom(this);
@@ -142,6 +141,7 @@ export class SHUIJING {
         this.index = -1;
         if (this.food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: this.food, who });
         clearTimeout(this.timeout);
+        who?.changeScore(3000);
         //console.log(who);
     }
 }

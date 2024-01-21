@@ -8,6 +8,7 @@ export const glb = {
     foodlist: [],
     boomlist: [],
     promptlist: [],
+    buffList: [],
     pause: 0,
     pass: 0,
     width: 1281,
@@ -32,6 +33,11 @@ export const glb = {
     biankuangImg: [],
     wallimg1:new Image(),
     victoryimg:new Image(),
+    methysisImg: new Array(8).fill(0).map((v, i) => {
+        v = new Image();
+        v.src = `image/skill/4/${i}.png`;
+        return v;
+    }),   
     missileImg: new Array(8).fill(0).map((v, i) => {
         v = new Image();
         v.src = `image/skill/3/${i}.png`;
@@ -192,3 +198,4 @@ export function sleep(timeout) {
         setTimeout(() => { resolve() }, timeout);
     })
 }
+window.glb=glb;

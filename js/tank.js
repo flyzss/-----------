@@ -1,8 +1,9 @@
 import  { glb } from "./glb.js";
-import { ZIDAN,MISSILE } from "./zidan.js";
+import { ZIDAN,MISSILE,POISON } from "./zidan.js";
 import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
 import { TANKBOOM } from "./boom.js";
+import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake} from "./buff.js";
 export class TANK {
     constructor(arg) {//(生命,外观,立场,位置,面向,ID) 立场=0无敌 1我方 其他敌方,面向0=left 1=up 2=right 3=down
         this.hp = arg.hp;
@@ -10,7 +11,7 @@ export class TANK {
         this.exterior = arg.exterior??(Math.floor(Math.random()*(glb.tankImg.length-2))+2);//0和1为玩家形象
         //console.log(glb.tankImg.length,this.exterior);
         this.belong = arg.belong;
-        this.xy = arg.xy;
+        this.xy = arg.xy||{ x: 0, y: 0 };
         this.fontColor = arg.fontColor || "#fff";
         this.width = arg.width || 46;
         this.height = arg.height || 46;
@@ -34,10 +35,8 @@ export class TANK {
         this.isPlayer = arg.isPlayer || false;
         this.isAutoBuyHp=arg.isAutoBuyHp||false;//是否自动购买血包
         this.killCount = 0;//杀敌计数器，10个敌人奖励1发炮弹
-        this.boomCount = arg.boomCount || 0;
+        this.boomCount = arg.boomCount || 0;//导弹数量
         this.boomTimeOut = 0;
-        this.zhongduTimer = 0;//中毒handler
-        this.zhongduCount = 0;//中毒计数器
         this.isDie = false;
         this.xixie = arg.xixie || 0.01;
         this.tmp = {};
@@ -48,6 +47,8 @@ export class TANK {
         this.keystate = {};
         this.autoShoot = arg.autoShoot || false;
         this.autoGetBoomCount = 0;
+        this.buffList = new Set();
+        this.poisonZidan=arg.poisonZidan||0;//毒子弹
         this.autoHuifu=0.2;//每分钟自动恢复血量的百分比默认20%
         this.repush();
         this.preAnimationTime = arg.preAnimationTime || 0;//前置动画时间
@@ -55,6 +56,20 @@ export class TANK {
             this.stop=true;
             this.preAnimation();
             glb.pause||glb.playAudio("kehuan",true,false,0.5);
+        }
+        this.makeBuff(arg.buffNameList||[]);
+    }
+    makeBuff(buffNameList){
+        const map={
+            '中毒':DEBUFF_methysis,
+            '毒药制造':BUFF_poisonMake,
+            '炸弹制造':BUFF_bombMake
+        }
+        for(const buffName of buffNameList){
+            const buff=map[buffName];
+            if(buff){
+                new buff({tank:this});
+            }
         }
     }
     set moveSpeed(val) {
@@ -112,7 +127,6 @@ export class TANK {
         glb.context.restore();//恢复状态
 
         //this.isPlayer&&glb.context.drawImage(glb.biankuangImg[0], x, y, this.width, this.height);
-        this.isDie==false&&this.zhongduCount > 0 && glb.context.drawImage(glb.foodImg[20], x, y, this.width, this.height);
         if (this.boomCount > 0) {
             glb.context.drawImage(glb.biankuangImg[2], x+this.width, y-10, 20, 20);//画导弹图标
             glb.context.fillStyle = 'white';
@@ -146,10 +160,13 @@ export class TANK {
         this.changeHp(x);
         new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `吸血+${~~x}`, color: "green", size: 15 });
     }
-    changeHp(val) {//改变血量
+    changeHp(val,whodid) {//改变血量
         this.hp += val;
         if (this.hp > this.maxhp) this.hp = this.maxhp;
         if (this.hp < 0) this.hp = 0;
+        if(this.hp<=0){
+            this.die(whodid);
+        }
     }
     shoping(foodIndex) {//快速购买道具
         if(glb.pause)return;
@@ -162,6 +179,15 @@ export class TANK {
         food.action(this);
         new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg:`${this.name}快捷键购买了道具${FOOD.list[foodIndex].text}`, color: "green", size: 30 });
     }
+    hasBuff(buffName){//判断自己是否拥有buff
+        const list=this.buffList.values();
+        for(let buff of list){
+            if(buff.name===buffName){
+                return buff;
+            }
+        }
+        return undefined;
+    }
     shoot() {
         if (this.stop) return;
         if ((new Date().getTime() - this.shootTimeout < this.shootSpeed)) return;
@@ -171,7 +197,10 @@ export class TANK {
         let zhuizongdan = this.zhuizongdan || this.tmp.zhuizongdan || 0;
         let zhalie = this.zhalie || this.tmp.zhalie || 0;
         glb.playAudio("zidan", true, false, 0.1);
-        new ZIDAN({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.sh, xy: { x: x + this.width / 2 - width / 2, y: y + this.height / 2 - height / 2 }, belong: this.belong, exterior: 0, who: this, direction: this.direction, far: this.shootFar, width, height, zhalie, zhuizongdan });
+        if(this.poisonZidan)
+            new POISON({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.sh, xy: { x: x + this.width / 2 - width / 2, y: y + this.height / 2 - height / 2 }, belong: this.belong, exterior: 0, who: this, direction: this.direction, far: this.shootFar, width, height, zhalie, zhuizongdan });
+        else 
+            new ZIDAN({ baojilv: this.baojilv, baojishang: this.baojishang, sh: this.sh, xy: { x: x + this.width / 2 - width / 2, y: y + this.height / 2 - height / 2 }, belong: this.belong, exterior: 0, who: this, direction: this.direction, far: this.shootFar, width, height, zhalie, zhuizongdan });
     }
     shoot1() {//导弹
         if (this.stop) return;
@@ -195,10 +224,6 @@ export class TANK {
     }
     loop() {
         if (glb.pause||this.stop) return;
-        if (this.hp <= 0) {
-            this.die();
-            return;
-        }
         if (this.killCount >= 10) {//杀敌10个奖励1发炮弹
             this.boomCount++;
             this.killCount = 0;
@@ -323,52 +348,62 @@ export class TANK {
             this.xy = oldxy;
             return false;
         }
-        if (hit.type == glb.types.food) hit.action(this);//如果碰撞到食物
+        if (hit.type == glb.types.food&&hit.who&&hit.who!==this){
+            this.xy = oldxy;
+            return false;//不是自己的食物不能踩上去
+        }
+        if (hit.type == glb.types.food&&(!hit.who||hit.who==this)) hit.action(this);//如果碰撞到食物
         this.direction = direction;
         return true;
     }
-    zhongdan(obj) {//中弹
+    zhongdan(zidan) {//中弹
         if (this.isDie||this.preAnimationTime>0) return;//死亡或者前置动画
-        if (obj.belong != this.belong && !this.stop) {
+        if (zidan.belong != this.belong && !this.stop) {
+            if(zidan.isPoison){//毒子弹
+                new DEBUFF_methysis({tank:this,whodid:zidan.who})
+            }
             let hp = this.hp;
             let baoji = false;
-            let sh = ~~(obj.sh * 0.8 + Math.random() * (obj.sh * 0.2));
+            let sh = ~~(zidan.sh * 0.8 + Math.random() * (zidan.sh * 0.2));
             let msg = `-${sh}`;
-            if (Math.random() <= obj.baojilv) {
-                sh = ~~(obj.maxsh * obj.baojishang);
+            if (Math.random() <= zidan.baojilv) {
+                sh = ~~(zidan.maxsh * zidan.baojishang);
                 msg = `暴击-${sh}`;
                 baoji = true;
             }
-            this.changeHp(-sh);
-            obj.sh -= hp;
-            if (this.hp <= 0) {
-                this.die(obj.who);
-                obj.who.changeScore(this.score > 10000 ? 10000 : this.score);
-                obj.who.killCount++;
-            }
-            obj.who.xixiefun(sh);
-            if (obj.sh <= 0) obj.die();
-            obj.boom(this);
+            this.changeHp(-sh,zidan.who);
+            zidan.sh -= hp;
+            zidan.who.xixiefun(sh);
+            if (zidan.sh <= 0) zidan.die();
+            zidan.boom(this);
             new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: msg, color: "red", size: baoji ? 40 : 20 });
         }
     }
-    zhongdu(){//中毒
-        if(this.isDie) return;
-        if(this.zhongduTimer)clearInterval(this.zhongduTimer);
-        this.zhongduCount=20;
-        let how=0.05;
-        this.zhongduTimer = setInterval(()=>{
-            this.changeHp(-this.maxhp*how);//每秒减少5%
-            new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `中毒-${this.maxhp*how}`, color: "red", size: 40 });
-            this.zhongduCount--;
-            if(this.zhongduCount<=0){
-                clearInterval(this.zhongduTimer);
-            }
-        },1000)
-    }
+    // zhongdu(zidan){//中毒
+    //     if(this.isDie) return;
+    //     if(this.zhongduTimer)clearInterval(this.zhongduTimer);
+    //     this.zhongduCount=20;
+    //     let how=0.05;
+    //     this.zhongduTimer = setInterval(()=>{
+    //         this.changeHp(-this.maxhp*how);//每秒减少5%
+    //         new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `中毒-${this.maxhp*how}`, color: "red", size: 40 });
+    //         this.zhongduCount--;
+    //         if(this.zhongduCount<=0){
+    //             clearInterval(this.zhongduTimer);
+    //         }
+    //         if (this.hp <= 0) {
+    //             this.die(zidan?.who);
+    //             zidan?.who?.changeScore(this.score > 10000 ? 10000 : this.score);
+    //             zidan?.who?.changeKillCount(1);
+    //         }
+    //     },1000)
+    // }
     changeScore(v) {//增加积分
         this.score += v;
-        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `积分+${v}`, color: "yellow", size: 30 });
+        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `积分${v}`, color: "yellow", size: 30 });
+    }
+    changeKillCount(v) {//修改杀敌数
+        this.killCount += v;
     }
     die(who) {
         if (this.isDie) return;//已经死了
@@ -383,5 +418,7 @@ export class TANK {
         let food = FOOD.list.map((v, i) => i)[jl + 1] || 0;//有几率产生食物
         if (food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: food, who });
         new TANKBOOM({ xy: { x: this.xy.x, y: this.xy.y }});
+        who?.changeScore(this.score > 10000 ? 10000 : this.score);
+        who?.changeKillCount(1);
     }
 }

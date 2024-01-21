@@ -49,7 +49,7 @@ export class TANK {
         this.autoGetBoomCount = 0;
         this.buffList = new Set();
         this.poisonZidan=arg.poisonZidan||0;//毒子弹
-        this.autoHuifu=0.2;//每分钟自动恢复血量的百分比默认20%
+        this.autoHuifu=0.1;//每分钟自动恢复血量的百分比默认20%
         this.repush();
         this.preAnimationTime = arg.preAnimationTime || 0;//前置动画时间
         if(this.preAnimationTime>0){

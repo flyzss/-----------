@@ -39,15 +39,15 @@ export class ZIDAN {
                 }
             }
         }
-        for (const shuijing of glb.shuijinglist) {
-            if (shuijing && shuijing.belong != this.belong) {
-                let tmp = Math.pow(Math.pow(shuijing.xy.x - x, 2) + Math.pow(shuijing.xy.y - y, 2), 0.5);
-                if (tmp < jl) {
-                    jl = tmp;
-                    ret = shuijing;
-                }
-            }
-        }
+        // for (const shuijing of glb.shuijinglist) {
+        //     if (shuijing && shuijing.belong != this.belong) {
+        //         let tmp = Math.pow(Math.pow(shuijing.xy.x - x, 2) + Math.pow(shuijing.xy.y - y, 2), 0.5);
+        //         if (tmp < jl) {
+        //             jl = tmp;
+        //             ret = shuijing;
+        //         }
+        //     }
+        // }
         if (jl != 9999999) this.target = { obj: ret, dist: jl };
     }
     loop() {
@@ -74,7 +74,7 @@ export class ZIDAN {
         }
         if (this.moveCount > Math.min(this.far,glb.width)) return this.die();//有效射程
         this.xy = { x, y };
-        let hit = glb.checkhit(this,["tanklist", 'shuijinglist',"walllist"]);
+        let hit = glb.checkhit(this,["tanklist","walllist", 'shuijinglist']);
         if (hit) hit.zhongdan(this);
     }
     drawme() {
@@ -119,6 +119,32 @@ export class MISSILE extends ZIDAN {//导弹
     }
     drawme() {
         let angel = [0, 90, 180, 270][this.direction];
+        let { x, y } = this.xy;
+        let px = x + this.width / 2, py = y + this.height / 2;
+        this.imgIndex=++this.imgIndex%this.imgList.length;
+        this.drawmeRunCount++;
+        glb.context.save();//保存状态
+        glb.context.translate(px, py);//设置画布上的(0,0)位置，也就是旋转的中心点
+        glb.context.rotate(angel * Math.PI / 180);
+        glb.context.translate(-px, -py);//设置画布上的(0,0)位置，也就是旋转的中心点
+        glb.context.drawImage(this.imgList[this.imgIndex], x, y, this.width, this.height);//把图片绘制在旋转的中心点，
+        glb.context.restore();//恢复状态
+    }
+}
+export class POISON extends MISSILE {//导弹
+    constructor(arg) {
+        super(arg);
+        this.imgList=glb.missileImg;
+        this.imgIndex = 0;
+        this.drawmeRunCount = 0;
+    }
+    drawme() {
+        let direction = this.direction;
+        let angel = 0;
+        if (direction == 0) { angel = 0 }
+        else if (direction == 2) { angel = 180 }
+        else if (direction == 1) { angel = 90 }
+        else if (direction == 3) { angel = 270 }
         let { x, y } = this.xy;
         let px = x + this.width / 2, py = y + this.height / 2;
         this.imgIndex=++this.imgIndex%this.imgList.length;

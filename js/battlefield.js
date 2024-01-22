@@ -30,8 +30,8 @@ export class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
-        this.player2 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
+        this.player1 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 20, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
+        this.player2 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 20, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
         this.resetPos();
         new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 } });
     }
@@ -125,7 +125,7 @@ export class Battlefield {
             glb.pause = true;
             this.bgm.pause();
             for (let v of glb.zidanlist) {//防止子弹带入下一关
-                v && v.die
+                v && v.die()
             }
             glb.zidanlist = [];
             glb.walllist = [];

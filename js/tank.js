@@ -293,7 +293,7 @@ export class TANK {
                 this.shoot1();//导弹
                 return;
             }
-            if(hit.type===glb.types.shuijing&&hit.isPlayer!==this.isPlayer&&hit.belong!==this.belong){//如果碰撞到水晶
+            if(hit.type===glb.types.shuijing&&hit.belong!==this.belong){//如果碰撞到水晶
                 if(this.direction!==direction){
                     this.move(direction)
                 }

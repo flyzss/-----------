@@ -3,7 +3,7 @@ import { ZIDAN,MISSILE,POISON } from "./zidan.js";
 import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
 import { TANKBOOM } from "./boom.js";
-import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake} from "./buff.js";
+import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake,BUFF_baoxiangMake} from "./buff.js";
 export class TANK {
     constructor(arg) {//(生命,外观,立场,位置,面向,ID) 立场=0无敌 1我方 其他敌方,面向0=left 1=up 2=right 3=down
         this.hp = arg.hp;
@@ -47,9 +47,9 @@ export class TANK {
         this.keystate = {};
         this.autoShoot = arg.autoShoot || false;
         this.autoGetBoomCount = 0;
-        this.buffList = new Set();
+        this.buffList = new Set();//BUFF列表
         this.poisonZidan=arg.poisonZidan||0;//毒子弹
-        this.autoHuifu=0.1;//每分钟自动恢复血量的百分比默认20%
+        this.autoHuifu=0.1;//每分钟自动恢复血量的百分比默认10%
         this.repush();
         this.preAnimationTime = arg.preAnimationTime || 0;//前置动画时间
         if(this.preAnimationTime>0){
@@ -63,7 +63,8 @@ export class TANK {
         const map={
             '中毒':DEBUFF_methysis,
             '毒药制造':BUFF_poisonMake,
-            '炸弹制造':BUFF_bombMake
+            '炸弹制造':BUFF_bombMake,
+            '宝箱制造':BUFF_baoxiangMake
         }
         for(const buffName of buffNameList){
             const buff=map[buffName];

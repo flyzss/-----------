@@ -194,11 +194,12 @@ export class Battlefield {
                     hp: 20,
                 },
                 {
-                    name: "搞笑的",
-                    sh: 0.1,
-                    score: 100,
-                    moveSpeed: -0.6,
-                    poisonZidan:true,
+                    name: "宝箱专家",
+                    //zhuizongdan: 1,
+                    belong: 3,
+                    fontColor: "lightblue",
+                    buffNameList: ["中毒", "宝箱制造"],
+                    hp: 10,
                 },
                 {
                     name: "嗑药的",
@@ -296,7 +297,7 @@ export class Battlefield {
                     beiong: 2
                 },
                 {
-                    name: "毒气大师",
+                    name: "毒药大师",
                     hp: 30,
                     shootFar: 500,
                     boomCount: 1,

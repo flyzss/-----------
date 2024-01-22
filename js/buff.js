@@ -128,7 +128,7 @@ export class BUFF_bombMake extends BUFF{
         if(!this.img)return;
         let {x,y}=this.tank.xy;
         let {width}=this.tank;
-        glb.context.drawImage(this.img, x+width, y+20, 15, 15);
+        glb.context.drawImage(this.img, x+width+16, y+20, 15, 15);
     }
     async bomb(){//每2秒钟随机位置生成一个炸弹
         while(!this.isDie&&!this.tank.isDie){
@@ -138,6 +138,35 @@ export class BUFF_bombMake extends BUFF{
                 new FOOD({ xy, act: 19 });
             }
             await sleep(900);
+        }
+        this.die();
+    }
+}
+/**
+ * 宝箱制造者，每3秒钟随机位置生成一个宝箱
+ */
+export class BUFF_baoxiangMake extends BUFF {
+    constructor(obj) {
+        super(obj);
+        this.type = 'buff';
+        this.name = '宝箱制造';
+        this.img = glb.foodImg[16];
+        this.baoxiang();
+    }
+    drawme() {
+        if (!this.img) return;
+        let { x, y } = this.tank.xy;
+        let { width } = this.tank;
+        glb.context.drawImage(this.img, x + width + 32, y + 20, 15, 15);
+    }
+    async baoxiang() { //每3秒钟随机位置生成一个宝箱
+        while (!this.isDie && !this.tank.isDie) {
+            let xy = glb.pause || this.tank.preAnimationTime > 0 ? null : this.getXy();
+            if (xy) {
+                new PROMPT({ xy: { x: xy.x, y: xy.y }, msg: `${this.tank.chenghao + this.tank.name}制造了宝箱`, color: "lightgreen", size: 30, life: 100 });
+                new FOOD({ xy, act: 16 });
+            }
+            await sleep(1500);
         }
         this.die();
     }

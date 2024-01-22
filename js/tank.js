@@ -3,7 +3,7 @@ import { ZIDAN,MISSILE,POISON } from "./zidan.js";
 import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
 import { TANKBOOM } from "./boom.js";
-import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake,BUFF_baoxiangMake} from "./buff.js";
+import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake,BUFF_baoxiangMake,BUFF_autoBuyHp} from "./buff.js";
 export class TANK {
     constructor(arg) {//(生命,外观,立场,位置,面向,ID) 立场=0无敌 1我方 其他敌方,面向0=left 1=up 2=right 3=down
         this.hp = arg.hp;
@@ -33,7 +33,6 @@ export class TANK {
         this.arg = arg;
         this.eatFoodCount = 0;//吃食物计数器
         this.isPlayer = arg.isPlayer || false;
-        this.isAutoBuyHp=arg.isAutoBuyHp||false;//是否自动购买血包
         this.killCount = 0;//杀敌计数器，10个敌人奖励1发炮弹
         this.boomCount = arg.boomCount || 0;//导弹数量
         this.boomTimeOut = 0;
@@ -64,7 +63,8 @@ export class TANK {
             '中毒':DEBUFF_methysis,
             '毒药制造':BUFF_poisonMake,
             '炸弹制造':BUFF_bombMake,
-            '宝箱制造':BUFF_baoxiangMake
+            '宝箱制造':BUFF_baoxiangMake,
+            '自动购买血量':BUFF_autoBuyHp
         }
         for(const buffName of buffNameList){
             const buff=map[buffName];
@@ -159,7 +159,7 @@ export class TANK {
     xixiefun(val) {//吸血
         let x = val * this.xixie
         this.changeHp(x);
-        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: `吸血+${~~x}`, color: "green", size: 15 });
+        new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 40 }, msg: `吸血+${~~x}`, color: "green", size: 30 });
     }
     changeHp(val,whodid) {//改变血量
         this.hp += val;
@@ -236,7 +236,6 @@ export class TANK {
         }
         this.changeHp(Math.floor(this.maxhp * this.autoHuifu / 60 / 50));//自动恢复血量
         if (this.autoShoot) this.shoot();
-        this.autoBuyHpFood();
         if (this.isai){ 
             this.ai();     
         }
@@ -254,8 +253,7 @@ export class TANK {
         return {x,y}
     }
     autoBuyHpFood(){//自动购买加血道具
-        if(!this.isAutoBuyHp)return;
-        if(this.hp<=this.maxhp/4&&this.score>=FOOD.list[1].money){//如果血量低于1/4，并且积分大于10000，就购买一个加生命的道具
+        if(this.hp<=this.maxhp/5&&this.score>=FOOD.list[1].money){//如果血量低于1/5，并且积分大于10000，就购买一个加生命的道具
             new PROMPT({ xy: { x: this.xy.x, y: this.xy.y - 10 }, msg: "购买加生命道具", color: "green", size: 30 });
             this.score -= FOOD.list[1].money;
             let food=new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act:1,who:this});

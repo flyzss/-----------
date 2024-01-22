@@ -4,6 +4,7 @@ import { PROMPT } from "./prompt.js";
 import { WALL } from "./wall.js";
 import { SHUIJING } from "./shuijing.js";
 import { FOOD } from "./food.js";
+import { BUFF_autoBuyHp } from "./buff.js";
 export class Battlefield {
     constructor(playerCount = 1) {
         glb.context.canvas.width = glb.width;
@@ -29,8 +30,8 @@ export class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
-        this.player2 = new TANK({ isPlayer: true,isAutoBuyHp:true, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
+        this.player1 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
+        this.player2 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 3, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
         this.resetPos();
         new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 } });
     }
@@ -135,11 +136,13 @@ export class Battlefield {
                 this.player1.hp = 1;
                 this.player1.changeScore(-10000);
                 this.player1.repush();
+                new BUFF_autoBuyHp({tank:this.player1});
             }
             if (this.player2.index == -1) {
                 this.player2.hp = 1;
                 this.player1.changeScore(-10000);
                 this.player2.repush();
+                new BUFF_autoBuyHp({tank:this.player2});
             }
             this.player1.tmp = {};
             this.player2.tmp = {};
@@ -188,7 +191,7 @@ export class Battlefield {
                     sh: 5,
                     moveSpeed: 2,
                     boomCount: 5,
-                    isAutoBuyHp: true,
+                    buffNameList: ['自动购买血量'],
                     //zhuizongdan: 1,
                     belong: 1,
                     hp: 20,
@@ -259,6 +262,7 @@ export class Battlefield {
                     zhuizongdan: 1,
                     score: 3000,
                     baojilv:1,//暴击率100%
+                    baojishang:3,//暴击效果
                     fontColor: "purple",
                     boomCount: 1,
                     hp:20,
@@ -292,7 +296,7 @@ export class Battlefield {
                     fontColor: "purple",
                     score: 10000,
                     sh: 3,
-                    isAutoBuyHp: true,
+                    buffNameList: ['自动购买血量'],
                     moveSpeed: 1.5,
                     beiong: 2
                 },
@@ -303,7 +307,7 @@ export class Battlefield {
                     boomCount: 1,
                     fontColor: "purple",
                     score: 10000,
-                    buffNameList: ["毒药制造"],
+                    buffNameList: ["中毒","毒药制造"],
                     poisonZidan:true,
                     moveSpeed: 2,
                     beiong: 2
@@ -325,11 +329,10 @@ export class Battlefield {
         let belong = bl || (ch.belong || 2);
         let moveSpeed = (1 + this.pass * 0.01) + (ch.moveSpeed || 0);
         let baojilv = 0.01 + this.pass * 0.002 + (ch.baojilv || 0);
-        let baojishang = 2 + this.pass * 0.01;
+        let baojishang = ch.baojishang||(2 + this.pass * 0.01);
         let fontColor = ch.fontColor || "white";
         let chenghao = ch.name || "";
         let zhuizongdan = ch.zhuizongdan || 0;
-        let isAutoBuyHp = ch.isAutoBuyHp || false;
         let poisonZidan = ch.poisonZidan || false;
         let buffNameList=ch.buffNameList||[];
         if (!xy) {
@@ -342,7 +345,7 @@ export class Battlefield {
             glb.playAudio('warning')//强敌来袭警告
             new PROMPT({ xy: { ...xy }, msg: '强敌来袭警告!', color: 'purple', size: 30, life: 200 });
         }
-        return new TANK({ isPlayer,buffNameList,poisonZidan,isAutoBuyHp, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
+        return new TANK({ isPlayer,buffNameList,poisonZidan, preAnimationTime: 20, fontColor, score, baojilv, baojishang, zhuizongdan, name, boomCount, chenghao, shootFar, shootSpeed, hp, sh, belong, xy, direction: 1, isai: bl == 1 ? 0 : 1, moveSpeed, width: size, height: size });
     }
     msgCallBackfun() {
         let arg = {

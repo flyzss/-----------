@@ -168,7 +168,10 @@ export class FOOD {
             //if(glb.shunyiing)return;
             //obj.shunyidaofood();
             for (let i = 0; i < glb.foodlist.length; i++) {
-                if (glb.foodlist[i] && glb.foodlist[i].act != 13) glb.foodlist[i].action(obj);
+                if (glb.foodlist[i] && glb.foodlist[i].act != 13){
+                    glb.foodlist[i].action(obj);
+                    new PROMPT({ xy:{...glb.foodlist[i].xy}, msg: `${obj.chenghao}${obj.name}全屏瞬移吃食物` });
+                } 
             }
             msg = `全屏瞬移吃食物`;
         }
@@ -206,7 +209,7 @@ export class FOOD {
         }
         else if (this.act == 19) {
             msg = `真倒霉，踩中炸弹,被炸掉大半血量!`;
-            new BOOM({ xy: { x: obj.xy.x, y: obj.xy.y },width:obj.width,height:obj.height });
+            new BOOM({ xy: {...this.xy },width:obj.width,height:obj.height });
             let sh=~~(obj.hp*0.9);
             obj.changeHp(-sh);
             new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: `被炸掉${sh}`, color: "red", size: 40 });

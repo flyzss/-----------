@@ -52,7 +52,7 @@ export class BUFF{
     die(){
         if(this.isDie)return;
         this.isDie=true;
-        glb.buffList[this.index]=null;
+        glb.buffList[this.index]=0;
         this.tank.buffList.delete(this);
     }
 }
@@ -65,18 +65,23 @@ export class DEBUFF_methysis extends BUFF{
         this.imageList=glb.methysisImg;
         this.type='debuff';
         this.name='中毒';
+        this.pps=0.055;//每秒掉血百分比
         this.play();
         this.debuff();
     }
     async debuff(){
         const same=this.getSame();
-        same&&same.die();//如果有同名BUFF就把它干掉
-        const pps=0.055;//每秒掉血百分比
+        if(same){
+            this.pps=same.pps+0.01;//中毒效果增加
+            same.die();//如果有同名BUFF就把它干掉
+        }
+        const pps=this.pps;
         let count=20;//持续时间
         while(!this.isDie&&!this.tank.isDie&&count>0){
             if(!glb.pause){
-                this.tank.changeHp(-this.tank.maxhp*pps,this.whodid);
-                new PROMPT({ xy: { x: this.tank.xy.x, y: this.tank.xy.y - 10 }, msg: `中毒-${this.tank.maxhp*pps}`, color: "red", size: 40 });
+                const hp=Math.floor(this.tank.maxhp*pps);
+                this.tank.changeHp(-hp,this.whodid);
+                new PROMPT({ xy: { x: this.tank.xy.x, y: this.tank.xy.y - 10 }, msg: `中毒-${hp}`, color: "red", size: 40 });
                 count--;                
             }
             await sleep(1000);
@@ -159,14 +164,39 @@ export class BUFF_baoxiangMake extends BUFF {
         let { width } = this.tank;
         glb.context.drawImage(this.img, x + width + 32, y + 20, 15, 15);
     }
-    async baoxiang() { //每3秒钟随机位置生成一个宝箱
+    async baoxiang() { //每1秒钟随机位置生成一个宝箱
         while (!this.isDie && !this.tank.isDie) {
             let xy = glb.pause || this.tank.preAnimationTime > 0 ? null : this.getXy();
             if (xy) {
                 new PROMPT({ xy: { x: xy.x, y: xy.y }, msg: `${this.tank.chenghao + this.tank.name}制造了宝箱`, color: "lightgreen", size: 30, life: 100 });
                 new FOOD({ xy, act: 16 });
             }
-            await sleep(1500);
+            await sleep(1000);
+        }
+        this.die();
+    }
+}
+/**
+ * 自动购买hp
+ */
+export class BUFF_autoBuyHp extends BUFF {
+    constructor(obj) {
+        super(obj);
+        this.type = 'buff';
+        this.name = '自动购买生命值';
+        this.img = glb.foodImg[1];
+        this.autoBuyHp()
+    }
+    drawme() {
+        if (!this.img) return;
+        let { x, y } = this.tank.xy;
+        let { width } = this.tank;
+        glb.context.drawImage(this.img, x + width, y + 35, 15, 15);
+    }
+    async autoBuyHp() { //每2秒钟检查血量并购买药
+        while (!this.isDie && !this.tank.isDie) {
+            this.tank.autoBuyHpFood();
+            await sleep(2000);
         }
         this.die();
     }

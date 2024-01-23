@@ -1,10 +1,8 @@
 "use strict"
 import { Battlefield } from "./battlefield.js";
-import { SHOP } from "./shop.js";
 
 
 const zc = new Battlefield(2);
-const shop = new SHOP(zc);
 document.onkeydown = (e) => {
     zc.keydown(e.code);
 }
@@ -24,6 +22,7 @@ zc.msgCallBack = (arg) => {
     $("#player1 .baojilv").text(`暴击率${(arg.p1.baojilv * 100).toFixed(2)}%`);
     $("#player1 .xixie").text(`吸血率${(arg.p1.xixie * 100).toFixed(2)}%`);
     $("#player1 .huifu").text(`自动恢复每分钟${(arg.p1.huifu * 100).toFixed(2)}%`);
+    $("#player1 .life").text(`复活次数${arg.p1.life}`);
 
     $("#player2 .score").text(`得分:${arg.p2.score}`);
     $("#player2 .hp").text(`${arg.p2.name} 生命值:${arg.p2.hp}`);
@@ -35,6 +34,7 @@ zc.msgCallBack = (arg) => {
     $("#player2 .baojilv").text(`暴击率${(arg.p2.baojilv * 100).toFixed(2)}%`);
     $("#player2 .xixie").text(`吸血率${(arg.p2.xixie * 100).toFixed(2)}%`);
     $("#player2 .huifu").text(`自动恢复每分钟${(arg.p2.huifu * 100).toFixed(2)}%`);
+    $("#player2 .life").text(`复活次数${arg.p2.life}`);
 }
 
 

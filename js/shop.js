@@ -15,10 +15,17 @@ export class SHOP {
         document.getElementById("p2gwc").ondrop = function (e) { //源对象松手释放在了目标对象中  
             SHOP.chiose("p2gwc", e);
         }
-        $("#btn_shop").click(() => { this.zc.pause(1); $("#shop").show() });
+        $("#btn_shop").click(() => { this.openShop() });
         $("#btn_shop_cancel").click(() => { SHOP.cancel(zc) });
         $("#btn_shop_buy").click(() => { SHOP.buy(zc) });
         
+    }
+    openShop() {
+        this.zc.pause(1);
+        $("#shop").show();
+    }
+    closeShop(){
+        SHOP.cancel(this.zc)
     }
     make() {
         let ul = $("#shop .item-list");

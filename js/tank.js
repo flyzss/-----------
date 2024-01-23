@@ -52,6 +52,7 @@ export class TANK {
         this.keystate = {};
         this.autoShoot = arg.autoShoot || false;
         this.autoGetBoomCount = 0;
+        this.life=arg.life||0;//复活次数
         this.buffList = new Set();//BUFF列表
         this.poisonZidan=arg.poisonZidan||0;//毒子弹
         this.autoHuifu=0.1;//每分钟自动恢复血量的百分比默认10%

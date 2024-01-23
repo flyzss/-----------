@@ -23,10 +23,11 @@ export const foodList=[
     { text: "宝箱盲盒", money: 100000, singleStr: '盲盒' ,sort:4},//16
     { text: "水晶护盾", money: 20000, singleStr: '保家',sort:5 },//17
     { text: "导弹", money: 30000, singleStr: '导弹' , sort:6},//18
-    { text: "炸弹", money: 1, singleStr: '小心', },//19
-    { text: "毒药", money: 1, singleStr: '中毒', },//20
+    { text: "炸弹", money: 1, singleStr: '小心', hide: true },//19
+    { text: "毒药", money: 1, singleStr: '中毒', hide: true },//20
     { text: "坦克零件", money: 100000, singleStr: '零件', hide: true },//21
-    { text: "头晕目眩", money: 1, singleStr: '眩晕', },//22
+    { text: "头晕目眩", money: 1, singleStr: '眩晕', hide: true },//22
+    { text: "复活机会", money: 400000, singleStr: '复活',  sort:7},//23
 ]
 export class FOOD {
     constructor(obj) {
@@ -45,7 +46,7 @@ export class FOOD {
         this.index = glb.pushToArr(glb.foodlist, this);
         this.timeout = 30;
         this.dieTimeout = 60;
-        if(this.act===19||this.act===20){//炸弹毒药没有归属权，并且消失时间为20秒
+        if([19,20,22].includes(obj.act)){//炸弹毒药没有归属权，并且消失时间为20秒
             this.dieTimeout = 20;
             this.who = null;
         }
@@ -187,7 +188,7 @@ export class FOOD {
         }
         else if (this.act == 16) {
             let act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
-            while ([19,20].includes(act)) {//宝箱里没有负面效果
+            while ([13,19,20,22].includes(act)) {//宝箱里没有负面效果
                 act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
             }
             msg = `打开了宝箱,获得了${FOOD.list[act].text}`;
@@ -226,6 +227,10 @@ export class FOOD {
         else if (this.act == 22) {
             msg = `头晕目眩，分不清方向了`;
             new DEBUFF_dizziness({tank:obj})
+        }
+        else if (this.act == 23) {
+            msg = `原地复活机会+1`;
+            obj.life+=1;
         }
         if (msg) new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: obj.name + '获得' + msg, color: "orange", size: 30, life: 100 });
         this.die();

@@ -33,17 +33,22 @@ export const glb = {
     biankuangImg: [],
     wallimg1:new Image(),
     victoryimg:new Image(),
-    methysisImg: new Array(8).fill(0).map((v, i) => {
+    dizzinessImg: new Array(6).fill(0).map((v, i) => {//眩晕
+        v = new Image();
+        v.src = `image/skill/5/${i}.png`;
+        return v;
+    }),
+    methysisImg: new Array(8).fill(0).map((v, i) => {//中毒
         v = new Image();
         v.src = `image/skill/4/${i}.png`;
         return v;
     }),   
-    missileImg: new Array(8).fill(0).map((v, i) => {
+    missileImg: new Array(8).fill(0).map((v, i) => {//导弹
         v = new Image();
         v.src = `image/skill/3/${i}.png`;
         return v;
     }),
-    skillImg2: new Array(9).fill(0).map((v, i) => {
+    skillImg2: new Array(9).fill(0).map((v, i) => {//召唤
         v = new Image();
         v.src = `image/skill/2/${i}.png`;
         return v;
@@ -93,19 +98,26 @@ export const glb = {
         }
     },
     _checkhit: function (a, b) {//矩形碰撞检查
-        if (a.x > b.x + b.width) return false;
-        else if (b.x > a.x + a.width) return false;
-        else if (a.y > b.y + b.height) return false;
-        else if (b.y > a.y + a.height) return false;
+        if (a.xy.x > b.xy.x + b.width) return false;
+        else if (b.xy.x > a.xy.x + a.width) return false;
+        else if (a.xy.y > b.xy.y + b.height) return false;
+        else if (b.xy.y > a.xy.y + a.height) return false;
         //console.log(a,b);
         return true;
     },
+    /**
+     * 检查对象是否与指定列表中的任何元素相交。
+     *
+     * @param {object} obj - 要检查是否击中的对象。
+     * @param {array} list - 要检查是否击中的元素列表。默认为 ["tanklist", "foodlist", 'shuijinglist',"walllist"]。
+     * @return {object|boolean} 返回第一个被击中的对象，如果没有击中则返回false。
+     */
     checkhit: function (obj,list= ["tanklist", "foodlist", 'shuijinglist',"walllist"]) {
         for (let j = 0; j < list.length; j++) {
             let arr = glb[list[j]];
             for (let i = 0, l = arr.length; i < l; i++) {
                 if (arr[i] && arr[i].id != obj.id) {
-                    if (glb._checkhit({ x: arr[i].xy.x, y: arr[i].xy.y, width: arr[i].width, height: arr[i].height }, { x: obj.xy.x, y: obj.xy.y, width: obj.width, height: obj.height })) {
+                    if (glb._checkhit(arr[i],obj)) {
                         return arr[i];
                     }
                 };

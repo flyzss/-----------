@@ -4,6 +4,12 @@ import { PROMPT } from "./prompt.js";
 import { FOOD } from "./food.js";
 import { TANKBOOM } from "./boom.js";
 import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake,BUFF_baoxiangMake,BUFF_autoBuyHp} from "./buff.js";
+const DIRMAP={
+    'left':0,
+    'up':1,
+    'right':2,
+    'down':3,
+}
 export class TANK {
     constructor(arg) {//(生命,外观,立场,位置,面向,ID) 立场=0无敌 1我方 其他敌方,面向0=left 1=up 2=right 3=down
         this.hp = arg.hp;
@@ -240,16 +246,17 @@ export class TANK {
             this.ai();     
         }
         if (this.keystate["Numpad0"] || this.keystate["Space"] ) this.shoot1();
-        if (this.keystate["ArrowLeft"] || this.keystate["KeyA"]) this.move(0);
-        else if (this.keystate["ArrowUp"] || this.keystate["KeyW"]) this.move(1);
-        else if (this.keystate["ArrowRight"] || this.keystate["KeyD"]) this.move(2);
-        else if (this.keystate["ArrowDown"] || this.keystate["KeyS"]) this.move(3);
+        if (this.keystate["ArrowLeft"] || this.keystate["KeyA"]) this.move(DIRMAP.left);
+        else if (this.keystate["ArrowUp"] || this.keystate["KeyW"]) this.move(DIRMAP.up);
+        else if (this.keystate["ArrowRight"] || this.keystate["KeyD"]) this.move(DIRMAP.right);
+        else if (this.keystate["ArrowDown"] || this.keystate["KeyS"]) this.move(DIRMAP.down);
     }
     _dir(x,y,direction,moveSpeed){
-        if (direction == 0) x -= moveSpeed;
-        else if (direction == 2) x += moveSpeed;
-        else if (direction == 1) y -= moveSpeed;
-        else if (direction == 3) y += moveSpeed;
+        if(this.dizziness)direction=(direction+2)%4;//眩晕状态，方向取反
+        if (direction == DIRMAP.left) x -= moveSpeed;
+        else if (direction == DIRMAP.right) x += moveSpeed;
+        else if (direction == DIRMAP.up) y -= moveSpeed;
+        else if (direction == DIRMAP.down) y += moveSpeed;
         return {x,y}
     }
     autoBuyHpFood(){//自动购买加血道具

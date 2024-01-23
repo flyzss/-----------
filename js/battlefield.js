@@ -253,6 +253,7 @@ export class Battlefield {
                     //zhuizongdan: 1,
                     boomCount: 1,
                     sh: 3,
+                    buffNameList: ["炸弹制造","毒药制造"],
                     belong: 10//攻击自己人
                 },
                 {
@@ -287,7 +288,6 @@ export class Battlefield {
                     score: 3000,
                     sh: 5,
                     moveSpeed: 1.5,
-                    beiong: 13
                 },
                 {
                     name: "会购物的",

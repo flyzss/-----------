@@ -2,7 +2,7 @@ import  { glb,sleep } from "./glb.js";
 import { PLANE } from "./plane.js";
 import { PROMPT } from "./prompt.js";
 import { BOOM } from "./boom.js";
-import { DEBUFF_methysis } from "./buff.js";
+import { DEBUFF_methysis,DEBUFF_dizziness } from "./buff.js";
 export const foodList=[
     {hide:true},//0
     { text: "回复生命", money: 3000, singleStr: '回血' ,sort:1},//1
@@ -23,9 +23,10 @@ export const foodList=[
     { text: "宝箱盲盒", money: 100000, singleStr: '盲盒' ,sort:4},//16
     { text: "水晶护盾", money: 20000, singleStr: '保家',sort:5 },//17
     { text: "导弹", money: 30000, singleStr: '导弹' , sort:6},//18
-    { text: "炸弹", money: 1, singleStr: '小心', hide: true },//19
+    { text: "炸弹", money: 1, singleStr: '小心', },//19
     { text: "毒药", money: 1, singleStr: '中毒', },//20
     { text: "坦克零件", money: 100000, singleStr: '零件', hide: true },//21
+    { text: "头晕目眩", money: 1, singleStr: '眩晕', },//22
 ]
 export class FOOD {
     constructor(obj) {
@@ -210,7 +211,7 @@ export class FOOD {
         else if (this.act == 19) {
             msg = `真倒霉，踩中炸弹,被炸掉大半血量!`;
             new BOOM({ xy: {...this.xy },width:obj.width,height:obj.height });
-            let sh=~~(obj.hp*0.9);
+            let sh=~~(obj.maxhp*0.9);
             obj.changeHp(-sh);
             new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: `被炸掉${sh}`, color: "red", size: 40 });
         }
@@ -221,6 +222,10 @@ export class FOOD {
         else if (this.act == 21) {
             msg = `坦克零件，每分钟自动回血能力+1%`;
             obj.autoHuifu += 0.01;
+        }
+        else if (this.act == 22) {
+            msg = `头晕目眩，分不清方向了`;
+            new DEBUFF_dizziness({tank:obj})
         }
         if (msg) new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: obj.name + '获得' + msg, color: "orange", size: 30, life: 100 });
         this.die();

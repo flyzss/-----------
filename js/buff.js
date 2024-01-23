@@ -90,6 +90,31 @@ export class DEBUFF_methysis extends BUFF{
     }  
 }
 /**
+ * 眩晕DEBUFF
+ */
+export class DEBUFF_dizziness extends BUFF{
+    constructor(obj){
+        super(obj);
+        this.imageList=glb.dizzinessImg;
+        this.type='debuff';
+        this.name='眩晕';
+        this.play();
+        this.debuff();
+    }
+    async debuff(){
+        let count=20;//持续时间
+        while(!this.isDie&&!this.tank.isDie&&count>0){
+            this.tank.dizziness=true;
+            if(!glb.pause){
+                count--;                
+            }
+            await sleep(1000);
+        }
+        this.tank.dizziness=false;
+        this.die();
+    }  
+}
+/**
  * 毒药制造者，每3秒钟随机位置生成一个毒药
  */
 export class BUFF_poisonMake extends BUFF{
@@ -98,6 +123,7 @@ export class BUFF_poisonMake extends BUFF{
         this.type='buff';
         this.name='毒药制造';
         this.img=glb.foodImg[20];
+        this.sleep=obj.sleep||900;//延迟时间
         this.poison();
     }
     drawme(){
@@ -113,7 +139,7 @@ export class BUFF_poisonMake extends BUFF{
                 new PROMPT({ xy:{x:xy.x,y:xy.y}, msg: `${this.tank.chenghao+this.tank.name}制造了毒药`, color: "lightgreen", size: 30,life:100 });
                 new FOOD({ xy, act: 20 });
             }
-            await sleep(900);
+            await sleep(this.sleep);
         }
         this.die();
     }
@@ -127,6 +153,7 @@ export class BUFF_bombMake extends BUFF{
         this.type='buff';
         this.name='炸弹制造';
         this.img=glb.foodImg[19];
+        this.sleep=obj.sleep||900;//延迟时间
         this.bomb();
     }
     drawme(){
@@ -142,7 +169,7 @@ export class BUFF_bombMake extends BUFF{
                 new PROMPT({ xy:{x:xy.x,y:xy.y}, msg: `${this.tank.chenghao+this.tank.name}制造了炸弹`, color: "lightgreen", size: 30,life:100 });
                 new FOOD({ xy, act: 19 });
             }
-            await sleep(900);
+            await sleep(this.sleep);
         }
         this.die();
     }
@@ -156,6 +183,7 @@ export class BUFF_baoxiangMake extends BUFF {
         this.type = 'buff';
         this.name = '宝箱制造';
         this.img = glb.foodImg[16];
+        this.sleep=obj.sleep||1000;//延迟时间
         this.baoxiang();
     }
     drawme() {
@@ -171,7 +199,7 @@ export class BUFF_baoxiangMake extends BUFF {
                 new PROMPT({ xy: { x: xy.x, y: xy.y }, msg: `${this.tank.chenghao + this.tank.name}制造了宝箱`, color: "lightgreen", size: 30, life: 100 });
                 new FOOD({ xy, act: 16 });
             }
-            await sleep(1000);
+            await sleep(this.sleep);
         }
         this.die();
     }
@@ -185,6 +213,7 @@ export class BUFF_autoBuyHp extends BUFF {
         this.type = 'buff';
         this.name = '自动购买生命值';
         this.img = glb.foodImg[1];
+        this.sleep=obj.sleep||2000;//延迟时间
         this.autoBuyHp()
     }
     drawme() {
@@ -196,7 +225,7 @@ export class BUFF_autoBuyHp extends BUFF {
     async autoBuyHp() { //每2秒钟检查血量并购买药
         while (!this.isDie && !this.tank.isDie) {
             this.tank.autoBuyHpFood();
-            await sleep(2000);
+            await sleep(this.sleep);
         }
         this.die();
     }

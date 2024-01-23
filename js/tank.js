@@ -59,10 +59,9 @@ export class TANK {
         this.repush();
         this.preAnimationTime = arg.preAnimationTime || 0;//前置动画时间
         if(this.preAnimationTime>0){
-            this.stop=true;
-            this.preAnimation();
-            glb.pause||glb.playAudio("kehuan",true,false,0.5);
+            this.startPreAnimation();
         }
+        this.buffNameList=arg.buffNameList||[];
         this.makeBuff(arg.buffNameList||[]);
     }
     makeBuff(buffNameList){
@@ -86,6 +85,30 @@ export class TANK {
     }
     get moveSpeed() {
         return this._moveSpeed;
+    }
+    revive(){//复活
+        if(!this.isDie)return;
+        this.xy=this.getRndXy(this.width,this.height);
+        this.life--;
+        this.hp=this.maxhp;
+        this.repush();
+        this.makeBuff(this.buffNameList);
+        new PROMPT({ xy: { ...this.xy }, msg: `${this.name}消耗一次复活次数，复活成功!`, color: "darkred", size: 40, life: 200 });
+        this.preAnimationTime=20;
+        this.startPreAnimation();
+    }
+    getRndXy(width=60, height=60){
+        let xy;
+        while (true) {
+            xy = { x: Math.round(Math.random() * glb.width), y: Math.round(Math.random() * glb.height) };
+            if (glb.checkhit({ xy, width, height }) == false && glb.isin(xy.x, xy.y, width, height)) break;
+        } 
+        return xy;
+    }
+    startPreAnimation(){//启动前置动画
+        this.stop=true;
+        this.preAnimation();
+        glb.pause||glb.playAudio("kehuan",true,false,0.5);
     }
     preAnimation(){
         if(!glb.pause){

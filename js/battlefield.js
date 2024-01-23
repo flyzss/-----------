@@ -111,20 +111,10 @@ export class Battlefield {
             return;
         }
         if(this.player1.die&&this.player1.life>0){
-            this.player1.xy=this.getRndXy(this.player1.width,this.player1.height);
-            this.player1.life--;
-            this.player1.hp=this.player1.maxhp;
-            this.player1.repush();
-            new BUFF_autoBuyHp({tank:this.player1});
-            new PROMPT({ xy: { ...this.player1.xy }, msg: `${this.player1.name}消耗一次复活次数，复活成功!`, color: "orange", size: 40, life: 200 })
+            this.player1.revive();
         }
         if(this.player2.die&&this.player2.life>0){
-            this.player2.xy=this.getRndXy(this.player2.width,this.player2.height);
-            this.player2.life--;
-            this.player2.hp=this.player2.maxhp;
-            this.player2.repush();
-            new BUFF_autoBuyHp({tank:this.player2});
-            new PROMPT({ xy: { ...this.player2.xy }, msg: `${this.player2.name}消耗一次复活次数，复活成功!`, color: "orange", size: 40, life: 200 })
+            this.player2.revive();
         }
         if (oppcount == 0) {
             let foodcount = 0;

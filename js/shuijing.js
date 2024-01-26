@@ -141,7 +141,7 @@ export class SHUIJING {
         this.index = -1;
         if (this.food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: this.food, who });
         clearTimeout(this.timeout);
-        who?.changeScore(3000);
+        who?.changeScore(100000);
         //console.log(who);
     }
 }

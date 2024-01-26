@@ -4,9 +4,9 @@ export class PROMPT {//减血提示
         this.xy = arg.xy;
         this.msg = arg.msg||'';
         this.color = arg.color;
-        this.size = arg.size;
-        this.width = arg.width;
-        this.height = arg.height;
+        this.size = arg.size||0;
+        this.width = arg.width||0;
+        this.height = arg.height||0;
         this.life = arg.life || 50;
         this.moveCount = 0;
         this.moveStep = arg.moveStep || 3;
@@ -14,8 +14,11 @@ export class PROMPT {//减血提示
         this.onDie = arg.onDie || function () { };
         this.handle = setInterval(() => { this.loop() }, 50);
         this.index = glb.pushToArr(glb.promptlist, this);
-        if (this.xy.x + this.size * this.msg.length > glb.width) {//防止超出屏幕
-            this.xy.x = glb.width - this.size * this.msg.length;
+        if (this.xy.x + this.size * this.msg.length+this.width > glb.width) {//防止超出屏幕
+            this.xy.x = glb.width - this.size * this.msg.length-this.width;
+        }
+        if(this.xy.x<0){
+            this.xy.x=0;
         }
         if (this.xy.y - this.life < 0) {
             this.xy.y = this.life;

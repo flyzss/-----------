@@ -1,34 +1,37 @@
-import  { glb,sleep } from "./glb.js";
+import { glb, sleep } from "./glb.js";
 import { PLANE } from "./plane.js";
 import { PROMPT } from "./prompt.js";
 import { BOOM } from "./boom.js";
-import { DEBUFF_methysis,DEBUFF_dizziness } from "./buff.js";
-export const foodList=[
-    {hide:true},//0
-    { text: "回复生命", money: 3000, singleStr: '回血' ,sort:1},//1
+import { DEBUFF_methysis, DEBUFF_dizziness } from "./buff.js";
+export const foodList = [
+    { hide: true },//0
+    { text: "回复生命", money: 3000, singleStr: '回血', sort: 1 },//1
     { text: "玩家分数", money: 100000, hide: true, singleStr: '分' },//2
     { text: "攻击速度", money: 100000, singleStr: '攻速', hide: true },//3
     { text: "攻击伤害", money: 80000, singleStr: '伤害', hide: true },//9
     { text: "射程", money: 100000, singleStr: '射程', hide: true },//5
     { text: "移动速度", money: 100000, singleStr: '移速', hide: true },//6
-    { text: "炸裂子弹", money: 10000, singleStr: '炸裂',sort:2 },//7
-    { text: "炸矿", money: 1, singleStr: '清矿', hide:true},//8
+    { text: "炸裂子弹", money: 10000, singleStr: '炸裂', sort: 2 },//7
+    { text: "炸矿", money: 1, singleStr: '清矿', hide: true },//8
     { text: "空军支援", money: 100000, singleStr: '飞机', hide: true },//9
     { text: "暴击率", money: 80000, singleStr: '暴率', hide: true },//10
     { text: "暴击效果", money: 80000, singleStr: '爆伤', hide: true },//11
-    { text: "追踪弹", money: 10000, singleStr: '追踪',sort:3 },//12
+    { text: "追踪弹", money: 10000, singleStr: '追踪', sort: 3 },//12
     { text: "瞬移", money: 200000, singleStr: '瞬移', hide: true },//13
     { text: "吸血效率", money: 100000, singleStr: '吸血', hide: true },//14
     { text: "最大生命", money: 100000, singleStr: '体力', hide: true },//15
-    { text: "宝箱盲盒", money: 100000, singleStr: '盲盒' ,sort:4},//16
-    { text: "水晶护盾", money: 20000, singleStr: '保家',sort:5 },//17
-    { text: "导弹", money: 30000, singleStr: '导弹' , sort:6},//18
-    { text: "炸弹", money: 1, singleStr: '小心',  },//19
+    { text: "宝箱盲盒", money: 100000, singleStr: '盲盒', sort: 4 },//16
+    { text: "水晶护盾", money: 20000, singleStr: '保家', sort: 5 },//17
+    { text: "导弹", money: 30000, singleStr: '导弹', sort: 6 },//18
+    { text: "炸弹", money: 1, singleStr: '小心', hide: true },//19
     { text: "毒药", money: 1, singleStr: '中毒', hide: true },//20
     { text: "坦克零件", money: 100000, singleStr: '零件', hide: true },//21
     { text: "头晕目眩", money: 1, singleStr: '眩晕', hide: true },//22
-    { text: "复活机会", money: 4, singleStr: '复活',  sort:7},//23
+    { text: "复活机会", money: 400000, singleStr: '复活', sort: 7, count: 10 },//23  count为该物品在食物池中的数量，默认为100，，该值等于0时食物不会出现
 ]
+export const foodPool = [];//食物概率池
+export const badFoodList=[13,19,20,22];
+
 export class FOOD {
     constructor(obj) {
         //console.log(obj.act);
@@ -38,7 +41,7 @@ export class FOOD {
         this.width = obj.width || 50;
         this.height = obj.height || 50;
         this._size = { width: this.width, height: this.height };
-        this.act = obj.act;
+        this.act = obj.act || FOOD.getRndFoodNum();
         this.who = obj.who;
         this.isDie = false;
         this.actstr = FOOD.list.map(item => item.singleStr);
@@ -46,13 +49,27 @@ export class FOOD {
         this.index = glb.pushToArr(glb.foodlist, this);
         this.timeout = 30;
         this.dieTimeout = 60;
-        if([19,20,22].includes(obj.act)){//炸弹毒药没有归属权，并且消失时间为20秒
+        if ([19, 20, 22].includes(this.act)) {//炸弹毒药没有归属权，并且消失时间为20秒
             this.dieTimeout = 20;
             this.who = null;
         }
         this.handle = setInterval(() => {
             this.loop()
         }, 1000);
+    }
+    /**
+     * 随机返回一个食物
+     * @returns 
+     */
+    static getRndFoodNum() {
+        if (foodPool.length == 0) {
+            for (let i = 1; i < FOOD.list.length; i++) {
+                for (let j = 0; j < (FOOD.list[i].count ?? 100); j++) {//每个食物默认放入池子100个。
+                    foodPool.push(i);
+                }
+            }
+        }
+        return foodPool[Math.floor(Math.random() * foodPool.length)];
     }
     loop() {
         if (glb.pause) return;
@@ -102,15 +119,15 @@ export class FOOD {
         if (this.who && this.who.id !== obj.id) return;//有归属权的只能给自己使用
         obj.changeScore(1000);//不管吃到什么食物必给1000分
         obj.eatFoodCount++;
-        if(obj.eatFoodCount===3&&!obj.isPlayer){
-            obj.chenghao='贪吃鬼'+obj.chenghao;
-            obj.fontColor='purple';
+        if (obj.eatFoodCount === 3 && !obj.isPlayer) {
+            obj.chenghao = '贪吃鬼' + obj.chenghao;
+            obj.fontColor = 'purple';
         }
         let msg = 0;
         glb.playAudio("pick");
         if (this.act == 1) {
-            let hp =100000 //~~(obj.maxhp - obj.hp);
-            obj.hp +=hp;//obj.maxhp;
+            let hp = 100000 //~~(obj.maxhp - obj.hp);
+            obj.hp += hp;//obj.maxhp;
             msg = `生命值+${hp}`
         }
         else if (this.act == 2) {
@@ -140,9 +157,9 @@ export class FOOD {
         else if (this.act == 8) {//清空所有墙
             (async () => {
                 for (const wall of glb.walllist) {
-                    if (wall&&wall.belong===undefined){
+                    if (wall && wall.belong === undefined) {
                         wall.die();//炸矿所得食物不属于任何人
-                        new BOOM({ xy: { x: wall.xy.x, y: wall.xy.y },width:wall.width,height:wall.height });
+                        new BOOM({ xy: { x: wall.xy.x, y: wall.xy.y }, width: wall.width, height: wall.height });
                         await sleep(10);
                     }
                 }
@@ -170,10 +187,10 @@ export class FOOD {
             //if(glb.shunyiing)return;
             //obj.shunyidaofood();
             for (let i = 0; i < glb.foodlist.length; i++) {
-                if (glb.foodlist[i] && glb.foodlist[i].act != 13){
+                if (glb.foodlist[i] && glb.foodlist[i].act != 13) {
                     glb.foodlist[i].action(obj);
-                    new PROMPT({ xy:{...glb.foodlist[i].xy}, msg: `${obj.chenghao}${obj.name}全屏瞬移吃食物` });
-                } 
+                    //new PROMPT({ xy: { ...glb.foodlist[i].xy }, msg: `${obj.chenghao}${obj.name}全屏瞬移吃食物` });
+                }
             }
             msg = `全屏瞬移吃食物`;
         }
@@ -187,9 +204,9 @@ export class FOOD {
             msg = `最大生命+25000,并回满血。`;
         }
         else if (this.act == 16) {
-            let act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
-            while ([13,19,20,22].includes(act)) {//宝箱里没有负面效果
-                act = ~~(Math.random() * (FOOD.list.length - 1)) + 1;
+            let act = FOOD.getRndFoodNum();
+            while ([13, 19, 20, 22].includes(act)) {//宝箱里没有负面效果
+                act = FOOD.getRndFoodNum();
             }
             msg = `打开了宝箱,获得了${FOOD.list[act].text}`;
             setTimeout(() => {
@@ -197,7 +214,7 @@ export class FOOD {
             }, 500);
         }
         else if (this.act == 17) {
-            const belong = obj.belong===1 ? 1 : 2;
+            const belong = obj.belong === 1 ? 1 : 2;
             msg = `水晶护盾，${belong === 1 ? "我方" : "敌方"}水晶血量大幅度提升`;
             for (const shuijing of glb.shuijinglist) {
                 if (shuijing && shuijing.belong == belong) {
@@ -211,14 +228,14 @@ export class FOOD {
         }
         else if (this.act == 19) {
             msg = `真倒霉，踩中炸弹,被炸掉大半血量!`;
-            new BOOM({ xy: {...this.xy },width:obj.width,height:obj.height });
-            let sh=~~(obj.maxhp*0.9);
+            new BOOM({ xy: { ...this.xy }, width: obj.width, height: obj.height });
+            let sh = ~~(obj.maxhp * 0.9);
             obj.changeHp(-sh);
             new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: `被炸掉${sh}`, color: "red", size: 40 });
         }
         else if (this.act == 20) {
             msg = `真倒霉，吃了一口毒药，中毒了!`;
-            new DEBUFF_methysis({tank:obj})
+            new DEBUFF_methysis({ tank: obj })
         }
         else if (this.act == 21) {
             msg = `坦克零件，每分钟自动回血能力+1%`;
@@ -226,11 +243,11 @@ export class FOOD {
         }
         else if (this.act == 22) {
             msg = `头晕目眩，分不清方向了`;
-            new DEBUFF_dizziness({tank:obj})
+            new DEBUFF_dizziness({ tank: obj })
         }
         else if (this.act == 23) {
             msg = `原地复活机会+1`;
-            obj.life+=1;
+            obj.life += 1;
         }
         if (msg) new PROMPT({ xy: { x: obj.xy.x, y: obj.xy.y - 10 }, msg: obj.name + '获得' + msg, color: "orange", size: 30, life: 100 });
         this.die();
@@ -243,6 +260,7 @@ export class FOOD {
         if (this.isDie) return;
         this.isDie = true;
         clearTimeout(this.handle);
-        if (glb.foodlist.length > this.index) glb.foodlist[this.index] = 0;
+        if (this.index>-1) glb.foodlist[this.index] = 0;
+        this.index=-1;
     }
 }

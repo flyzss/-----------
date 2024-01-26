@@ -1,7 +1,7 @@
 import  { glb } from "./glb.js";
 import { ZIDAN,MISSILE,POISON } from "./zidan.js";
 import { PROMPT } from "./prompt.js";
-import { FOOD } from "./food.js";
+import { FOOD,badFoodList } from "./food.js";
 import { TANKBOOM } from "./boom.js";
 import {DEBUFF_methysis,BUFF_poisonMake,BUFF_bombMake,BUFF_baoxiangMake,BUFF_autoBuyHp} from "./buff.js";
 const DIRMAP={
@@ -352,6 +352,11 @@ export class TANK {
             }
             if(hit.type===glb.types.food&&(!hit.who||hit.who.id==this.id)){//如果碰撞到食物
                 //console.log(`${this.name}碰撞食物${hit.act}`);
+                if(this.belong===1&&badFoodList.includes(hit.act)){//如果是玩家并且是恶心食物忽略目标
+                    this.ignoringTargets.add(hit.id);//忽视目标
+                    setTimeout(()=>{this.ignoringTargets.delete(hit.id);},10000);//10秒后移除忽视目标
+                    return;
+                }
                 if (!this.move(direction)){//如果不能移动
                     this.ignoringTargets.add(hit.id);//忽视目标
                     setTimeout(()=>{this.ignoringTargets.delete(hit.id);},1000);//1秒后移除忽视目标
@@ -444,9 +449,8 @@ export class TANK {
         this.stop = 1;
         glb.tanklist[this.index] = 0;
         this.index = -1;
-        let jl = this.score >= 3000 ? Math.floor(Math.random() * (FOOD.list.length-1)) : Math.floor(Math.random() * 200);//积分大于3000必须有食物
-        let food = FOOD.list.map((v, i) => i)[jl + 1] || 0;//有几率产生食物
-        if (food) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, act: food, who });
+        let jl = this.score >= 3000 ? 1 : 0.2;//积分大于3000必须有食物
+        if (Math.random() <= jl) new FOOD({ xy: { x: this.xy.x, y: this.xy.y }, who });
         new TANKBOOM({ xy: { x: this.xy.x, y: this.xy.y }});
         who?.changeScore(this.score > 10000 ? 10000 : this.score);
         who?.changeKillCount(1);

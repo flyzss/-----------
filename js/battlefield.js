@@ -32,8 +32,8 @@ export class Battlefield {
         list.forEach((v) => {
             glb[v] = [];
         });
-        this.player1 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 20, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
-        this.player2 = new TANK({ isPlayer: true,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 20, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
+        this.player1 = new TANK({ isPlayer: true,life:1,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 20, sh: 1800, autoShoot: true, hp: 150000, exterior: 0, belong: 1, direction: 1, moveSpeed: 2, name: this.player1DefultName });
+        this.player2 = new TANK({ isPlayer: true,life:1,buffNameList: ['自动购买血量'],score:100000, baojilv: 0.05, baojishang: 3, width: 60, height: 60, boomCount: 20, sh: 1800, autoShoot: true, hp: 150000, exterior: 1, belong: 1, direction: 1, isai: this.playerCount == 1 ? 1 : 0, moveSpeed: 2, name: this.player2DefultName });
         this.resetPos();
         new SHUIJING({ hp: 20000 + this.pass * 2000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 } });
     }
@@ -79,6 +79,8 @@ export class Battlefield {
                     glb.tanklist[i].die();
                 }
             }
+            glb.playAudio('chuangguanchenggong');
+            glb.playAudio('victory');
             this.oppAllDie = true;
             this.pass >= 1 && new PROMPT({ xy: { x: 431, y: glb.height / 2 - 164 / 2 }, img: glb.victoryimg, width: 418, height: 164, life: 100 })
         }
@@ -110,11 +112,15 @@ export class Battlefield {
             }, 500);
             return;
         }
-        if(this.player1.die&&this.player1.life>0){
+        if(this.player1.isDie&&this.player1.life>0){
             this.player1.revive();
+            glb.playAudio('fuhuo');
+            new PROMPT({ xy: { x:this.player1.xy.x-251,y:this.player1.xy.y}, img: glb.fuhuoimg, width: 251*2, height: 54*2, life: 100 })
         }
-        if(this.player2.die&&this.player2.life>0){
+        if(this.player2.isDie&&this.player2.life>0){
             this.player2.revive();
+            glb.playAudio('fuhuo');
+            new PROMPT({ xy: { ...this.player2.xy }, img: glb.fuhuoimg, width: 251*2, height: 54*2, life: 100 })
         }
         if (oppcount == 0) {
             let foodcount = 0;
@@ -156,7 +162,7 @@ export class Battlefield {
             this.player2.tmp = {};
             this.resetPos();
             new SHUIJING({ hp: 50000 + this.pass * 10000, belong: 1, isPlayer: true, xy: { x: 550, y: 700 }, exterior: 1 });
-            new SHUIJING({ hp: 50000 + this.pass * 50000, belong: 2, xy: { x: 550, y: 100 } });
+            new SHUIJING({ hp: 50000 + this.pass * 25000, belong: 2, xy: { x: 550, y: 100 } });
             for (let i = 0; i < 7; i++) {//随机生成坦克
                 this.makeTank(null, null, { x: 0 + i * 120 + 50, y: 0 });
             }
@@ -164,7 +170,7 @@ export class Battlefield {
                 let x = (i % (glb.width / 61)) * 61;
                 let y = 140 + Math.floor(i / (glb.width / 61)) * 61;
                 if (glb.checkhit({ xy: { x, y }, width: 60, height: 60 }) != false || !glb.isin(x, y, 60, 60)) continue;
-                new WALL({ hp: 1000 * Math.floor(Math.random() * 5) + this.pass * 100, food: FOOD.list.map((v, i) => i)[Math.floor(Math.random() * (150 + this.pass * 5)) + 1] || 0, xy: { x, y }, width: 60, height: 60 })
+                new WALL({ hp: 1000 * Math.floor(Math.random() * 5) + this.pass * 10, food: Math.random() < (0.15-this.pass*0.001) ? FOOD.getRndFoodNum() : 0, xy: { x, y }, width: 60, height: 60 })
             }
             this.pass++;
 

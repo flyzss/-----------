@@ -33,6 +33,7 @@ export const glb = {
     biankuangImg: [],
     wallimg1:new Image(),
     victoryimg:new Image(),
+    fuhuoimg:new Image(),
     dizzinessImg: new Array(6).fill(0).map((v, i) => {//眩晕
         v = new Image();
         v.src = `image/skill/5/${i}.png`;
@@ -66,6 +67,7 @@ export const glb = {
     makeTankimg: function () {
         this.wallimg1.src = `image/biankuang/wall1.png`;
         this.victoryimg.src = `image/biankuang/victory.png`;
+        this.fuhuoimg.src = `image/biankuang/fuhuo.png`;
         for (let i = 0; i < 3; i++) {
             this.planeImg[i] = new Image();
             this.planeImg[i].src = `image/plane/${i}.png`
@@ -182,6 +184,9 @@ export const glb = {
         kehuan: [],
         warning: [],
         glass: [],
+        victory: [],
+        chuangguanchenggong: [],
+        fuhuo: [],
         die: []
     },
     playAudio(name, autoPlay = true, loop = false, volume = 1,max=Infinity) {

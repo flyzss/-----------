@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-21T09:55:45.348Z",
+  "title": "Design System: 余烬防线 / EMBERLINE",
+  "extensions": {
+    "colorMeta": {
+      "ember-amber": {
+        "role": "primary",
+        "displayName": "余烬琥珀",
+        "tonalRamp": [
+          "oklch(15% 0.025 62)",
+          "oklch(27% 0.055 62)",
+          "oklch(39% 0.085 62)",
+          "oklch(51% 0.115 62)",
+          "oklch(63% 0.14 62)",
+          "oklch(75% 0.13 62)",
+          "oklch(87% 0.07 62)",
+          "oklch(95% 0.025 62)"
+        ]
+      },
+      "crystal-green": {
+        "role": "secondary",
+        "displayName": "水晶浅绿",
+        "tonalRamp": [
+          "oklch(15% 0.02 135)",
+          "oklch(27% 0.04 135)",
+          "oklch(39% 0.065 135)",
+          "oklch(51% 0.09 135)",
+          "oklch(63% 0.11 135)",
+          "oklch(75% 0.105 135)",
+          "oklch(87% 0.075 135)",
+          "oklch(95% 0.025 135)"
+        ]
+      },
+      "damage-coral": {
+        "role": "tertiary",
+        "displayName": "受击珊瑚",
+        "tonalRamp": [
+          "oklch(15% 0.025 30)",
+          "oklch(27% 0.055 30)",
+          "oklch(39% 0.09 30)",
+          "oklch(51% 0.13 30)",
+          "oklch(63% 0.15 30)",
+          "oklch(75% 0.12 30)",
+          "oklch(87% 0.065 30)",
+          "oklch(95% 0.025 30)"
+        ]
+      },
+      "shell-ink": {
+        "role": "neutral",
+        "displayName": "外壳墨绿",
+        "tonalRamp": [
+          "oklch(15% 0.009 175)",
+          "oklch(27% 0.014 175)",
+          "oklch(39% 0.018 175)",
+          "oklch(51% 0.022 175)",
+          "oklch(63% 0.025 175)",
+          "oklch(75% 0.02 175)",
+          "oklch(87% 0.012 175)",
+          "oklch(95% 0.005 175)"
+        ]
+      },
+      "panel-ink": {
+        "role": "neutral",
+        "displayName": "面板墨绿",
+        "tonalRamp": [
+          "oklch(15% 0.01 165)",
+          "oklch(27% 0.015 165)",
+          "oklch(39% 0.02 165)",
+          "oklch(51% 0.025 165)",
+          "oklch(63% 0.028 165)",
+          "oklch(75% 0.022 165)",
+          "oklch(87% 0.013 165)",
+          "oklch(95% 0.005 165)"
+        ]
+      },
+      "pale-ink": {
+        "role": "neutral",
+        "displayName": "浅色油墨",
+        "tonalRamp": [
+          "oklch(15% 0.008 112)",
+          "oklch(27% 0.014 112)",
+          "oklch(39% 0.02 112)",
+          "oklch(51% 0.025 112)",
+          "oklch(63% 0.03 112)",
+          "oklch(75% 0.028 112)",
+          "oklch(87% 0.02 112)",
+          "oklch(95% 0.012 112)"
+        ]
+      },
+      "muted-sage": {
+        "role": "neutral",
+        "displayName": "灰鼠尾草",
+        "tonalRamp": [
+          "oklch(15% 0.008 145)",
+          "oklch(27% 0.014 145)",
+          "oklch(39% 0.02 145)",
+          "oklch(51% 0.025 145)",
+          "oklch(63% 0.03 145)",
+          "oklch(75% 0.025 145)",
+          "oklch(87% 0.015 145)",
+          "oklch(95% 0.006 145)"
+        ]
+      },
+      "seam-green": {
+        "role": "neutral",
+        "displayName": "接缝绿",
+        "tonalRamp": [
+          "oklch(15% 0.01 155)",
+          "oklch(27% 0.017 155)",
+          "oklch(39% 0.025 155)",
+          "oklch(51% 0.032 155)",
+          "oklch(63% 0.035 155)",
+          "oklch(75% 0.028 155)",
+          "oklch(87% 0.016 155)",
+          "oklch(95% 0.006 155)"
+        ]
+      },
+      "upgrade-surface": {
+        "role": "neutral",
+        "displayName": "改装面绿",
+        "tonalRamp": [
+          "oklch(15% 0.012 150)",
+          "oklch(27% 0.02 150)",
+          "oklch(39% 0.03 150)",
+          "oklch(51% 0.038 150)",
+          "oklch(63% 0.04 150)",
+          "oklch(75% 0.032 150)",
+          "oklch(87% 0.018 150)",
+          "oklch(95% 0.006 150)"
+        ]
+      },
+      "olive-concrete": {
+        "role": "neutral",
+        "displayName": "橄榄混凝土",
+        "tonalRamp": [
+          "oklch(15% 0.012 135)",
+          "oklch(27% 0.022 135)",
+          "oklch(39% 0.032 135)",
+          "oklch(51% 0.04 135)",
+          "oklch(63% 0.045 135)",
+          "oklch(75% 0.035 135)",
+          "oklch(87% 0.02 135)",
+          "oklch(95% 0.007 135)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "装甲铭牌",
+        "purpose": "自托管 Chakra Petch Bold；英文品牌、标记与数值，中文回退系统黑体。"
+      },
+      "headline": {
+        "displayName": "开场命令",
+        "purpose": "开场两行中文标题；窄屏与短横屏分别覆盖字号。"
+      },
+      "title": {
+        "displayName": "场景模态标题",
+        "purpose": "暂停、帮助、改装和结果标题。"
+      },
+      "body": {
+        "displayName": "正文",
+        "purpose": "指令与常规按钮；按内容使用较宽行高。"
+      },
+      "label": {
+        "displayName": "功能标签",
+        "purpose": "辅助状态与操作提示，最低 11px；不包含装饰微字。"
+      },
+      "telemetry": {
+        "displayName": "战斗数值",
+        "purpose": "侧栏统计为 25px，较窄布局为 21px，结算统计为 36px。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "arena-structure",
+        "value": "0 18px 45px #0003",
+        "purpose": "将战场与墨色页面底分离的柔和结构阴影。"
+      },
+      {
+        "name": "modal-backdrop",
+        "value": "backdrop-filter: blur(5px); background: #0c1512dc",
+        "purpose": "场景内暂停与决策覆盖层，保留下方战场感。"
+      },
+      {
+        "name": "keyboard-focus",
+        "value": "outline: 2px solid var(--orange); outline-offset: 5px",
+        "purpose": "所有按钮和链接的可见键盘焦点。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "action-response",
+        "value": "background 0.15s, transform 0.15s",
+        "purpose": "主按钮悬停变亮并上移 2px。"
+      },
+      {
+        "name": "upgrade-response",
+        "value": "border-color 0.15s, background 0.15s, transform 0.15s",
+        "purpose": "升级按钮悬停或焦点时边框变亮并上移 4px。"
+      },
+      {
+        "name": "hud-meter",
+        "value": "width 0.2s",
+        "purpose": "装甲和核心变化反馈。"
+      },
+      {
+        "name": "wave-banner",
+        "value": "opacity 0.25s",
+        "purpose": "不拦截指针的波次横幅。"
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "关闭 CSS 过渡、震屏、全屏闪光及悬浮摆动；保留必要战斗动画。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-desktop",
+        "value": "min-width: 1700px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "max-width: 1150px"
+      },
+      {
+        "name": "stacked",
+        "value": "max-width: 850px"
+      },
+      {
+        "name": "portrait-console",
+        "value": "max-width: 560px"
+      },
+      {
+        "name": "short-landscape",
+        "value": "(max-height: 600px) and (orientation: landscape)"
+      },
+      {
+        "name": "touch-controls",
+        "value": "pointer: coarse"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "启动踏板",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "启动、继续与重新部署等主操作；真实按钮保留焦点和禁用状态。",
+      "html": "<button class=\"ds-primary\">启动引擎<svg width=\"23\" height=\"23\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg></button>",
+      "css": "/* 实色主操作与全局键盘焦点。 */ .ds-primary{display:flex;align-items:center;justify-content:space-between;gap:24px;min-width:244px;padding:16px 22px;background:var(--orange,#f7a358);color:#1d251c;border:0;border-radius:0;font:700 13px 'Microsoft YaHei','PingFang SC',sans-serif;cursor:pointer;transition:background .15s,transform .15s}.ds-primary svg{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.ds-primary:hover{background:#ffbd7c;transform:translateY(-2px)}.ds-primary:focus-visible{outline:2px solid var(--orange,#f7a358);outline-offset:5px}.ds-primary:disabled{opacity:.4;cursor:default}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "次级场景操作",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "返回主菜单等次操作，以底线和灰绿文字保持层级。",
+      "html": "<button class=\"ds-secondary\">返回主菜单</button>",
+      "css": "/* 细底线的次操作沿用全局焦点。 */ .ds-secondary{background:transparent;color:var(--muted,#9da99d);padding:12px;border:0;border-bottom:1px solid var(--line,#344039);border-radius:0;margin-top:9px;font:13px 'Microsoft YaHei','PingFang SC',sans-serif;cursor:pointer}.ds-secondary:focus-visible{outline:2px solid var(--orange,#f7a358);outline-offset:5px}.ds-secondary:disabled{opacity:.4;cursor:default}"
+    },
+    {
+      "name": "全局工具",
+      "kind": "button",
+      "refersTo": "button-tool",
+      "description": "声音、帮助与全屏入口；窄屏可只保留带名称的 SVG 图标。",
+      "html": "<button class=\"ds-tool\" aria-label=\"操作说明\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4 M12 16v1\"/></svg><span>操作</span></button>",
+      "css": "/* 描边工具图标不依赖外部图标库。 */ .ds-tool{display:flex;align-items:center;gap:8px;padding:4px;background:none;border:0;color:var(--muted,#9da99d);font:11px 'Microsoft YaHei','PingFang SC',sans-serif;cursor:pointer}.ds-tool svg{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.ds-tool:hover{color:var(--ink,#edf0dd)}.ds-tool:focus-visible{outline:2px solid var(--orange,#f7a358);outline-offset:5px}.ds-tool:disabled{opacity:.4;cursor:default}"
+    },
+    {
+      "name": "游玩人数选择",
+      "kind": "custom",
+      "refersTo": "mode-option",
+      "description": "并排按钮组，以选中下划线和 aria-pressed 区分单人或双人模式。",
+      "html": "<div class=\"ds-modes\" role=\"group\" aria-label=\"选择游玩人数\"><button aria-pressed=\"true\">单人行动</button><button aria-pressed=\"false\">双人协作</button></div>",
+      "css": "/* 模式状态由真实游戏逻辑同步 aria-pressed。 */ .ds-modes{display:flex;width:244px;border-bottom:1px solid #5b6855}.ds-modes button{flex:1;background:none;color:#a6b19b;padding:10px 0;border:0;border-bottom:2px solid transparent;font:13px 'Microsoft YaHei','PingFang SC',sans-serif;cursor:pointer}.ds-modes button[aria-pressed=true]{color:var(--ink,#edf0dd);border-bottom-color:var(--orange,#f7a358)}.ds-modes button:focus-visible{outline:2px solid var(--orange,#f7a358);outline-offset:5px}"
+    },
+    {
+      "name": "装甲改装按钮",
+      "kind": "card",
+      "refersTo": "upgrade-card",
+      "description": "三选一决策的真实按钮；效果文案始终可见。",
+      "html": "<button class=\"ds-upgrade\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m12 3 8 4v6q-2 6-8 8-6-2-8-8V7Z M12 7v9 M8 12h8\"/></svg><b>强化装甲</b><p>提高装甲耐久，守住下一道防线。</p><small>[ 1 ] 选择改装</small></button>",
+      "css": "/* 展示文案仅说明样式；实际效果取自游戏升级配置。 */ .ds-upgrade{background:#233027;border:1px solid #53634c;color:var(--ink,#edf0dd);text-align:left;padding:22px 18px;min-height:170px;border-radius:0;font-family:'Microsoft YaHei','PingFang SC',sans-serif;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}.ds-upgrade:hover,.ds-upgrade:focus-visible{border-color:var(--orange,#f7a358);background:#303a2b;transform:translateY(-4px)}.ds-upgrade:focus-visible{outline:2px solid var(--orange,#f7a358);outline-offset:5px}.ds-upgrade svg{fill:none;stroke:var(--orange,#f7a358);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-bottom:18px}.ds-upgrade b{display:block;font-size:16px;margin-bottom:10px}.ds-upgrade p{font-size:11px;line-height:1.8;color:#bfccb5;margin:0}.ds-upgrade small{display:block;color:var(--orange,#f7a358);font:11px Chakra,sans-serif;margin-top:15px}@media(prefers-reduced-motion:reduce){.ds-upgrade{transition:none}}"
+    },
+    {
+      "name": "装甲状态条",
+      "kind": "custom",
+      "refersTo": "armor-meter",
+      "description": "纤细条形状态与明文数值配对，避免只靠颜色理解状态。",
+      "html": "<div class=\"ds-armor\"><div class=\"ds-armor-label\"><span>装甲完整度</span><b>75 / 100</b></div><div class=\"ds-meter\" role=\"meter\" aria-label=\"装甲完整度\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"75\"><i></i></div></div>",
+      "css": "/* 数值与填充宽度共同表示装甲；预览固定为示例值。 */ .ds-armor{width:230px;font:11px 'Microsoft YaHei','PingFang SC',sans-serif}.ds-armor-label{display:flex;justify-content:space-between;color:var(--muted,#9da99d);margin-bottom:9px}.ds-armor-label b{font-family:Chakra,'Microsoft YaHei',sans-serif;color:var(--ink,#edf0dd)}.ds-meter{height:4px;background:#354438;overflow:hidden}.ds-meter i{display:block;width:75%;height:100%;background:var(--green,#b9edac);transition:width .2s}@media(prefers-reduced-motion:reduce){.ds-meter i{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "灰烬中的水晶防线",
+    "overview": "废弃工业区是一张仍在运转的作战台：橄榄色混凝土、墨绿色外壳、浅绿水晶和琥珀炮火组成材料语言。界面克制，战场具体；程序化绘制的履带、车体装甲、倒角掩体、管线和磨损纹理形成手绘般的层次。\n\n玩家从开场、战斗、改装到结算始终留在同一实时场景中。文字和遥测服务于下一步操作，环境细节服务于空间记忆；弹道、受击和威胁必须从地面纹理中清楚分离。本文件记录已实现的 `main.css`、`index.htm` 与 `js/renderer.js`，不代表未落地的概念稿。",
+    "keyCharacteristics": [
+      "工业废墟的粗粝地面与清晰装甲剪影。",
+      "墨色直角外壳、细接缝、有限的琥珀与水晶绿强调。",
+      "中文指令配合窄直几何英文标记和数值。",
+      "场景内操作，桌面遥测与触屏操作台随空间重排。"
+    ],
+    "rules": [
+      {
+        "name": "The Signal Rule",
+        "body": "强色优先表达行动、友军生命和危险，地面保持低饱和，不能与炮火争夺注意力。",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Orders Rule",
+        "body": "不把徽章微字、分隔符或地面涂字的装饰尺寸复制给操作提示与状态信息。",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "**Do** 让炮弹、敌我剪影、核心状态从工业纹理中清楚分离。",
+      "**Do** 使用同一场景承接启动、战斗、改装与结算。",
+      "**Do** 保留键盘焦点、触屏多指操作与横屏独立暂停入口。",
+      "**Do** 将自动化浏览器与模拟测试作为行为证据，另由真人确认音质、节奏和战斗手感。"
+    ],
+    "donts": [
+      "**Don't** 把地面装饰画成可碰撞实体，或让粒子遮蔽关键威胁。",
+      "**Don't** 将小于功能文字基线的装饰字扩展为操作信息样式。",
+      "**Don't** 用未由真实战役状态产生的胜利数值或截图代替结算验证。",
+      "**Don't** 用浏览器通过与模拟测试通过宣称真人听感或战斗体验已获验证。"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+# 自动生成的截图、临时浏览器脚本与复核证据不进入游戏源码。
+.impeccable/review/
+# Python 本地静态服务器不会生成构建产物；编辑器与系统临时文件保持本地。
+__pycache__/
+.DS_Store
+Thumbs.db
+.impeccable/questions/

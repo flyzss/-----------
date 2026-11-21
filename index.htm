@@ -1,82 +1,173 @@
-﻿<!DOCTYPE html>
-<html>
-
-<head>
-    <title>坦克大战-逐像素版</title>
-    <script type="text/javascript" src="js/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="main.css">
-</head>
-
-<body>
-    <div style="display: flex;">
-        <div style="flex: 90%;"><canvas id="can"></canvas></div>
-        <div id="candiv" style="overflow-y: scroll;max-height: 100vh;">
-            <div id="msg">
-                <p id="pass">第0关</p>
-                <div id="player1" class="player">
-                    <div class="hp">0</div>
-                    <div class="life">0</div>
-                    <div class="sspeed">射速</div>
-                    <div class="shootFar">射程</div>
-                    <div class="moveSpeed">移速</div>
-                    <div class="baojishang">暴击</div>
-                    <div class="baojilv">暴击</div>
-                    <div class="xixie">吸血率</div>
-                    <div class="sh">伤害</div>
-                    <div class="huifu">每分钟自动恢复</div>
-                    <div class="score">得分:0</div>
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+        <meta name="theme-color" content="#111817" />
+        <meta name="description" content="余烬防线：守住水晶核心。支持单人与本地双人的装甲生存街机游戏。" />
+        <title>余烬防线 EMBERLINE · 坦克大战重制</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%23111817'/%3E%3Cpath d='M16 4 26 15 16 28 6 15Z' fill='%23b9edac'/%3E%3C/svg%3E"
+        />
+        <link rel="stylesheet" href="main.css" />
+    </head>
+    <body>
+        <!-- 顶部只保留全局操作；战斗数值集中在战场与右侧遥测栏。 -->
+        <header class="masthead">
+            <a class="brand" href="index.htm" aria-label="余烬防线首页"
+                ><svg viewBox="0 0 36 36" aria-hidden="true">
+                    <path d="M18 3 32 17 18 33 4 17Z" />
+                    <path d="m18 10 7 8-7 9-7-9Z" /></svg
+                ><span>EMBERLINE<small>余烬防线</small></span></a
+            >
+            <div class="header-caption">装甲生存行动 <span> / </span> CRYSTAL DEFENSE</div>
+            <nav class="toolbar" aria-label="游戏设置">
+                <!-- 横屏触屏时底部状态栏隐藏，因此提供独立暂停入口。 -->
+                <button id="landscape-pause" class="tool-button landscape-pause" disabled aria-label="暂停战斗">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14 M16 5v14" /></svg>
+                </button>
+                <button id="sound-button" class="tool-button" aria-pressed="false" title="音效与音乐（M）">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M11 5 6 9H3v6h3l5 4Z M15 8q5 4 0 8 M18 5q8 7 0 14" /></svg
+                    ><span>声音关闭</span>
+                </button>
+                <button id="help-button" class="tool-button" title="操作说明">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4 M12 16v1" /></svg
+                    ><span>操作</span>
+                </button>
+                <button id="fullscreen-button" class="tool-button" title="切换全屏">
+                    <svg viewBox="0 0 24 24"><path d="M3 9V3h6 M15 3h6v6 M21 15v6h-6 M9 21H3v-6" /></svg
+                    ><span>全屏</span>
+                </button>
+            </nav>
+        </header>
+        <main class="game-shell">
+            <section class="battle-column" aria-label="战场">
+                <div class="mission-strip">
+                    <span
+                        ><i class="status-dot"></i><b id="mission-label">灰烬工业区</b>
+                        <span class="muted"> / 核心保卫战</span></span
+                    ><span id="sector-label">SECTOR 01 — 06</span>
                 </div>
-                <div id="player2" class="player">
-                    <div class="hp">0</div>
-                    <div class="life">0</div>
-                    <div class="sspeed">射速</div>
-                    <div class="shootFar">射程</div>
-                    <div class="moveSpeed">移速</div>
-                    <div class="baojishang">暴击</div>
-                    <div class="baojilv">暴击</div>
-                    <div class="xixie">吸血率</div>
-                    <div class="sh">伤害</div>
-                    <div class="huifu">每分钟自动恢复</div>
-                    <div class="score">得分:0</div>
+                <div id="arena" class="arena">
+                    <canvas
+                        id="game"
+                        width="1280"
+                        height="800"
+                        aria-label="坦克战场：使用 WASD 移动，鼠标瞄准，按住左键或空格射击"
+                    ></canvas>
+                    <div class="arena-top">
+                        <span id="combat-state">待命 · 等待指挥官</span><span id="timer">00:00</span>
+                    </div>
+                    <div id="banner" class="wave-banner" aria-live="polite"></div>
+                    <!-- 开场界面直接叠在真实战场上，开战后退场，不打断后续操作。 -->
+                    <div id="welcome" class="welcome">
+                        <div class="welcome-copy">
+                            <h1>余烬之中，<br />守住最后的<span>光。</span></h1>
+                            <p>引擎仍在轰鸣。核心尚未熄灭。<br />驾驶你的战车，穿过六道钢铁防线。</p>
+                            <div class="mode-switch" role="group" aria-label="选择游玩人数">
+                                <button class="selected" data-mode="1" aria-pressed="true">单人行动</button
+                                ><button data-mode="2" aria-pressed="false">双人协作</button>
+                            </div>
+                            <button id="start-button" class="primary-button">
+                                启动引擎
+                                <svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg></button
+                            ><span class="start-note">无需下载 · 每局约 3–6 分钟 · 支持键鼠 / 触屏</span>
+                        </div>
+                        <div class="welcome-stamp">
+                            <svg viewBox="0 0 48 48">
+                                <path d="m24 4 16 18-16 22L8 22Z M24 12v22 M16 22h16" /></svg
+                            ><span>最后一道防线<small>HOLD THE LIGHT</small></span>
+                        </div>
+                    </div>
+                    <div id="modal-layer" class="modal-layer" hidden></div>
+                    <div id="toast" class="toast" role="status"></div>
+                    <div id="touch-controls" class="touch-controls">
+                        <div id="joystick" class="joystick" aria-label="拖动控制移动"><i></i></div>
+                        <div class="touch-actions">
+                            <button id="touch-dash" aria-label="冲刺">冲刺</button
+                            ><button id="touch-nova" aria-label="震荡爆破">震荡</button
+                            ><button id="touch-fire" aria-label="按住射击">开火</button>
+                        </div>
+                    </div>
+                    <div class="arena-corner">LIVE FIELD / <span id="field-coordinate">1280 × 800</span></div>
                 </div>
-            </div>
-            <div style="border-radius: 10px;background-color: #fff;padding: 5px;margin-top: 5px;">
-                <button id="start">重开</button>
-                <button id="resetPos">脱困</button>
-                <button id="pause">暂停</button>
-                <button id="btn_shop">商店</button>
-                <select id="playercount">
-                    <option value="2">双人</option>
-                    <option value="1">单人</option>
-                </select>
-                <div>
-                    <div>p1名字:<input type="text" id="p1name" value="P1"></div>
-                    <div>p2名字:<input type="text" id="p2name" value="P2"></div>
-                    <button id="btn_save">保存</button>
+                <div class="pilot-bar" id="pilot-bar">
+                    <div class="pilot-id">
+                        <span class="pilot-mark">P1</span>
+                        <div>
+                            <b>游隼 · 轻型突击战车</b><span id="pilot-status">引擎就绪 / 等待部署</span>
+                        </div>
+                    </div>
+                    <div class="armor-block">
+                        <div><span>装甲完整度</span><b id="armor-value">100 / 100</b></div>
+                        <div class="meter"><i id="armor-meter"></i></div>
+                    </div>
+                    <div class="ability-status">
+                        <span><kbd>SHIFT</kbd> 冲刺 <b id="dash-status">就绪</b></span
+                        ><span><kbd>Q</kbd> 震荡 <b id="nova-status">就绪</b></span>
+                    </div>
+                    <button id="pause-button" class="pause-button" disabled title="暂停（Esc）">
+                        <svg viewBox="0 0 20 20"><path d="M6 4v12 M14 4v12" /></svg>
+                    </button>
                 </div>
-            </div>
-            <div style="margin-top: 5px;padding: 5px;color: #fff;background-color: #000;border-radius: 10px;">快捷键说明:W、S、A、D、空格控制玩家1的移动和导弹发射，箭头键和数字键盘0控制玩家2的移动和导弹发射。大键盘和小键盘的1、2、3、4、5、6可以不用打开商店直接买对应位置的东西。</div>
-        </div>
-
-    </div>
-    <div id="shop">
-        <ul class="item-list">
-        </ul>
-        <fieldset class="gwc" id="p1gwc">
-            <legend>P1购物车</legend>
-            <ul></ul>
-            <p class="zj">总计:0</p>
-        </fieldset>
-        <fieldset class="gwc" id="p2gwc">
-            <legend>P2购物车</legend>
-            <ul></ul>
-            <p class="zj">总计:0</p>
-        </fieldset>
-        <div class="buttong">
-            <button id="btn_shop_buy">确定</button><button id="btn_shop_cancel">取消</button>
-        </div>
-    </div>
-</body>
-<script type="module" src="js/main.js"></script>
-
+            </section>
+            <aside class="operations" aria-label="作战信息">
+                <section class="operation-heading">
+                    <h2>守住核心。<br />让希望继续。</h2>
+                    <p id="objective">击退全部六波敌军。<br />每次防守成功，重构你的战车。</p>
+                </section>
+                <section class="core-section">
+                    <div class="section-label">
+                        <h3>水晶核心</h3>
+                        <span id="core-value">100%</span>
+                    </div>
+                    <div class="meter core-meter"><i id="core-meter"></i></div>
+                    <p id="core-hint"><i class="status-dot"></i> 核心信号稳定</p>
+                </section>
+                <section class="wave-section">
+                    <div class="section-label">
+                        <h3>防线进度</h3>
+                        <span><b id="wave-value">00</b> / 06</span>
+                    </div>
+                    <div id="wave-track" class="wave-track" aria-label="六波战役进度"></div>
+                    <div class="telemetry">
+                        <div><span>摧毁敌军</span><b id="kills-value">000</b></div>
+                        <div><span>作战积分</span><b id="score-value">00000</b></div>
+                    </div>
+                </section>
+                <section class="radar-section">
+                    <div class="section-label">
+                        <h3>战术雷达</h3>
+                        <span class="live-label">实时</span>
+                    </div>
+                    <canvas id="radar" width="256" height="140" aria-label="战场小地图"></canvas>
+                    <div class="radar-legend">
+                        <span><i class="ally"></i> 友军</span><span><i class="enemy"></i> 敌军</span
+                        ><span><i class="crystal"></i> 核心</span>
+                    </div>
+                </section>
+                <section class="loadout-section">
+                    <div class="section-label">
+                        <h3>战车改装</h3>
+                        <span id="upgrade-count">0 项</span>
+                    </div>
+                    <div id="loadout"><p class="empty-loadout">完成一波防守，选择战场升级。</p></div>
+                </section>
+                <div class="control-note">
+                    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</span
+                    ><span>鼠标瞄准 · 左键 / 空格开火</span
+                    ><span><kbd>F</kbd> 自动开火 <b id="auto-label">关</b></span>
+                </div>
+            </aside>
+        </main>
+        <footer class="footer">
+            <span>从手搓坦克大战，到下一道防线。</span
+            ><span>CANVAS ARCADE <i>◆</i> <a href="legacy.htm">回到旧版</a></span>
+        </footer>
+        <script type="module" src="js/main.js"></script>
+    </body>
 </html>

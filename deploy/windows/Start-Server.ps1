@@ -20,9 +20,7 @@ try {
     }
     $nodeExecutable = (Get-Command -Name $NodePath -CommandType Application -ErrorAction Stop).Source
     $majorVersion = (& $nodeExecutable -p 'process.versions.node.split(".")[0]')
-    if ($LASTEXITCODE -ne 0 -or [int]$majorVersion -lt 22) {
-        throw '需要 Node.js 22 或更新版本。'
-    }
+
     if (-not (Test-Path -LiteralPath (Join-Path $projectRoot 'node_modules/ws/package.json'))) {
         throw '请先在项目根目录执行 npm ci --omit=dev。'
     }

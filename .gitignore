@@ -5,3 +5,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .impeccable/questions/
+
+node_modules/
+
+# Windows 启动脚本生成的本机运行日志。
+/logs/

@@ -460,7 +460,8 @@ kbd {
 }
 .wave-track {
     display: flex;
-    gap: 6px;
+    /* 二十四段进度条：间距收窄，避免窄屏下每段被压成看不见的细线。 */
+    gap: 4px;
     margin: 14px 0 20px;
 }
 .wave-track span {
@@ -1613,29 +1614,466 @@ body {
     overscroll-behavior: contain;
 }
 /* 竖屏遥测消除额外的几像素溢出，小尺寸仍让核心耐久与波次同时可见。 */
-@media(max-width:850px){
-    .operations{padding-top:8px;padding-bottom:0}
-    .operations .section-label{margin-bottom:8px}
-    .operations .wave-track{margin:10px 0}
-    .telemetry span{margin-bottom:2px}
+@media (max-width: 850px) {
+    .operations {
+        padding-top: 8px;
+        padding-bottom: 0;
+    }
+    .operations .section-label {
+        margin-bottom: 8px;
+    }
+    .operations .wave-track {
+        margin: 10px 0;
+    }
+    .telemetry span {
+        margin-bottom: 2px;
+    }
 }
-@media(max-width:560px) and (max-height:720px){
-    .operations .section-label{margin-bottom:6px}
-    .operations .wave-track{margin:6px 0}
-    .telemetry span{display:none}
+@media (max-width: 560px) and (max-height: 720px) {
+    .operations .section-label {
+        margin-bottom: 6px;
+    }
+    .operations .wave-track {
+        margin: 6px 0;
+    }
+    .telemetry span {
+        display: none;
+    }
 }
 /* 极窄屏的装甲数值保持完整，避免把 100 / 100 从数字中间拆开。 */
-@media(max-width:560px){
-    .armor-block b{white-space:nowrap}
-    .armor-block>div:first-child{flex-wrap:wrap;justify-content:flex-end}
+@media (max-width: 560px) {
+    .armor-block b {
+        white-space: nowrap;
+    }
+    .armor-block > div:first-child {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
 }
-@media(max-width:360px){.pilot-id div>span{display:none}}
+@media (max-width: 360px) {
+    .pilot-id div > span {
+        display: none;
+    }
+}
 /* 短竖屏把统计改成两行标签与数值，压缩间距而不丢失计数含义。 */
-@media(max-width:560px) and (max-height:720px){
-    .operations .section-label{margin-bottom:4px}
-    .operations .wave-track{margin:4px 0}
-    .telemetry{display:grid;gap:2px}
-    .telemetry>div{display:flex;align-items:baseline;justify-content:space-between;gap:4px}
-    .telemetry span{display:inline;margin:0;font-size:11px}
-    .telemetry b{font-size:17px;line-height:1.1}
+@media (max-width: 560px) and (max-height: 720px) {
+    .operations .section-label {
+        margin-bottom: 4px;
+    }
+    .operations .wave-track {
+        margin: 4px 0;
+    }
+    .telemetry {
+        display: grid;
+        gap: 2px;
+    }
+    .telemetry > div {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 4px;
+    }
+    .telemetry span {
+        display: inline;
+        margin: 0;
+        font-size: 11px;
+    }
+    .telemetry b {
+        font-size: 17px;
+        line-height: 1.1;
+    }
+}
+/* 联机入口继承原有装甲面板的边界和颜色；表单只占用需要受保护焦点的房间任务。 */
+.campaign-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 300px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 11px;
+}
+.campaign-select select {
+    font: inherit;
+    color: var(--ink);
+    background: #1c2b22;
+    border: 1px solid #56644e;
+    border-radius: 0;
+    padding: 7px 8px;
+    min-width: 0;
+    max-width: 220px;
+}
+.online-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    background: #1b2a20dc;
+    border: 1px solid #829773;
+    color: var(--green);
+    padding: 11px 18px;
+    margin-top: 9px;
+    min-width: 244px;
+    text-align: left;
+}
+.online-entry span {
+    font-size: 11px;
+    color: var(--muted);
+}
+.online-entry:hover {
+    background: #31412b;
+    border-color: var(--green);
+}
+.welcome-copy {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+.welcome h1 {
+    font-size: clamp(28px, 3.3vw, 52px);
+    margin-bottom: 14px;
+}
+.welcome p {
+    margin-bottom: 12px;
+}
+.welcome .mode-switch {
+    margin-bottom: 12px;
+}
+.welcome .start-note {
+    margin-top: 10px;
+}
+.online-form {
+    max-width: 450px;
+    margin: auto;
+}
+.online-form .primary-button {
+    width: 100%;
+    max-width: none;
+    margin-top: 0;
+    justify-content: center;
+}
+.join-room {
+    margin-top: 20px;
+    padding-top: 17px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    text-align: left;
+}
+.join-room label {
+    grid-column: 1/-1;
+    font-size: 12px;
+    color: var(--muted);
+}
+.join-room input,
+.invite-row input {
+    width: 100%;
+    min-width: 0;
+    background: #1b2a21;
+    color: var(--ink);
+    border: 1px solid #617456;
+    padding: 12px;
+    font: 700 18px var(--display);
+    letter-spacing: 3px;
+    border-radius: 0;
+    caret-color: var(--orange);
+}
+.join-room .secondary-button {
+    margin: 0;
+    padding: 10px 16px;
+    color: var(--green);
+}
+.room-error {
+    color: var(--red);
+    font-size: 12px;
+    line-height: 1.6;
+    min-height: 18px;
+    overflow-wrap: anywhere;
+}
+.room-members {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    text-align: left;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+.room-members b {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+}
+.room-members span {
+    display: block;
+    color: var(--green);
+    font-size: 12px;
+    margin-top: 10px;
+}
+.invite-row {
+    display: flex;
+    gap: 12px;
+    margin: 15px 0;
+    align-items: center;
+}
+.invite-row input {
+    font:
+        11px 'Microsoft YaHei',
+        sans-serif;
+    letter-spacing: 0;
+}
+.invite-row .secondary-button {
+    white-space: nowrap;
+    margin: 0;
+}
+.room-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.room-actions .primary-button {
+    min-width: 200px;
+    margin: 10px 0;
+}
+.room-actions p {
+    color: var(--muted);
+    font-size: 12px;
+}
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 3px;
+}
+#vote-status {
+    color: var(--green);
+    font-size: 12px;
+}
+.toast {
+    max-width: calc(100% - 24px);
+    width: max-content;
+    white-space: normal;
+    line-height: 1.5;
+    text-align: center;
+}
+.touch-actions {
+    display: grid;
+    grid-template-columns: 44px 44px 68px;
+    gap: 6px;
+    align-items: center;
+    bottom: 9px;
+}
+.touch-actions button {
+    width: 44px;
+    height: 44px;
+}
+#touch-support {
+    grid-column: 1/3;
+    width: 94px;
+    border-radius: 22px;
+}
+.touch-actions #touch-fire {
+    grid-column: 3;
+    grid-row: 1/3;
+}
+@media (max-width: 850px) {
+    .ability-status {
+        flex-wrap: wrap;
+    }
+    .toolbar {
+        gap: 12px;
+    }
+}
+@media (min-width: 851px) and (max-height: 820px) {
+    .welcome h1 {
+        font-size: 36px;
+    }
+    .welcome p {
+        font-size: 12px;
+        line-height: 1.7;
+    }
+    .welcome .mode-switch button {
+        padding: 7px 0;
+    }
+    .welcome .primary-button {
+        padding-top: 13px;
+        padding-bottom: 13px;
+    }
+}
+@media (max-width: 560px) {
+    .campaign-select {
+        max-width: 244px;
+    }
+    .online-entry {
+        min-width: 230px;
+        max-width: 244px;
+        padding: 10px 14px;
+    }
+    .welcome h1 {
+        font-size: 28px;
+    }
+    .welcome .start-note {
+        font-size: 11px;
+    }
+    .room-members {
+        gap: 14px;
+    }
+    .room-members b {
+        font-size: 12px;
+    }
+    .invite-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .join-room {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+    .modal-content h2 {
+        letter-spacing: 1px;
+    }
+    .online-form .primary-button {
+        font-size: 12px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+@media (max-width: 560px) and (max-height: 720px) {
+    .welcome h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+    .campaign-select select {
+        padding: 5px;
+    }
+    .welcome .mode-switch button {
+        padding: 6px;
+    }
+    .welcome .primary-button {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+    .online-entry {
+        margin-top: 7px;
+        padding: 9px 12px;
+    }
+}
+@media (max-height: 600px) and (orientation: landscape) {
+    .welcome h1 {
+        font-size: 23px;
+        line-height: 1.15;
+        margin-bottom: 7px;
+    }
+    .welcome p {
+        display: none;
+    }
+    .campaign-select {
+        margin-bottom: 3px;
+    }
+    .campaign-select select {
+        padding: 4px 6px;
+    }
+    .welcome .mode-switch {
+        margin-bottom: 6px;
+    }
+    .welcome .mode-switch button {
+        padding: 5px;
+    }
+    .online-entry {
+        padding: 7px 14px;
+        margin-top: 7px;
+    }
+    .welcome .start-note {
+        display: none;
+    }
+    .welcome-copy {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
+/* 章节表单与短窗口叙事在战斗入口前让出空间，不裁掉创建房间按钮。 */
+.campaign-select > span {
+    white-space: nowrap;
+}
+.welcome-copy {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+@media (min-width: 851px) and (max-height: 760px) {
+    .welcome p {
+        display: none;
+    }
+}
+
+/*
+ * 手机横屏作战：标题栏改为悬浮在右上角的图标工具条，隐藏品牌与任务条，
+ * 把省下的约 50px 高度全部还给战场；战场两侧留白继续容纳摇杆与技能键。
+ */
+@media (max-height: 600px) and (orientation: landscape) {
+    body.playing .masthead {
+        position: fixed;
+        top: max(4px, env(safe-area-inset-top));
+        right: max(8px, env(safe-area-inset-right));
+        z-index: 30;
+        width: auto;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+    }
+    body.playing .brand,
+    body.playing .mission-strip,
+    body.playing #timer {
+        display: none;
+    }
+    body.playing .battle-column {
+        grid-template-rows: minmax(0, 1fr);
+    }
+    body.playing .arena {
+        height: calc(100dvh - 14px);
+    }
+    body.playing .game-shell {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+}
+/* 竖屏触屏作战时提示横屏：战场在横屏下约大 1.7 倍。提示数秒后自动淡出且不拦截触摸。 */
+.rotate-hint {
+    display: none;
+}
+@media (pointer: coarse) and (orientation: portrait) {
+    body.playing .rotate-hint {
+        display: block;
+        position: fixed;
+        left: 50%;
+        top: 12px;
+        z-index: 40;
+        transform: translateX(-50%);
+        padding: 8px 14px;
+        border: 1px solid #b9edac88;
+        background: #111817e6;
+        color: #e3ecd0;
+        font-size: 13px;
+        white-space: nowrap;
+        pointer-events: none;
+        animation: rotate-hint-fade 5s ease forwards;
+    }
+}
+@keyframes rotate-hint-fade {
+    0%,
+    75% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+/* 触屏开火键改为「自动开火」开关：开启时高亮，玩家只需一指控制移动。 */
+.touch-actions #touch-fire[aria-pressed='true'] {
+    background: #f39a52;
+    color: #1c1d16;
 }

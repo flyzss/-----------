@@ -164,28 +164,31 @@ test('双人改装效果一致，重复选择不会再次叠加', () => {
     assert.equal(game.players[1].damage, game.players[0].damage);
 });
 
-test('完整六波生成、清场、改装和首领击杀可以正常结算胜利', () => {
+test('完整二十四关生成、清场、改装与四位首领可以正常结算胜利', () => {
     const { game } = createGame();
-    let bossSeen = false;
+    const bossesSeen = new Set();
     for (let wave = 0; wave < WAVES.length; wave++) {
         const config = WAVES[wave];
         for (let index = 0; index < config.count; index++) {
             game.spawnEnemy();
             const enemy = game.enemies.at(-1);
             enemy.warning = 0;
-            if (enemy.type === 'boss') bossSeen = true;
+            if (enemy.boss) bossesSeen.add(enemy.type);
             game.damageEnemy(enemy, enemy.maxHp + 1);
         }
+        // 裂变车生成的子车也必须肃清，避免把尚有敌军的关卡伪装成完成。
+        for (const enemy of game.enemies)
+            if (!enemy.dead) {
+                enemy.warning = 0;
+                game.damageEnemy(enemy, enemy.maxHp + 1);
+            }
         game.enemies = game.enemies.filter((e) => !e.dead);
         game.completeWave();
         if (game.state === 'upgrade') game.chooseUpgrade(game.choices[0].id);
     }
     assert.equal(game.state, 'won');
-    assert.ok(bossSeen);
-    assert.equal(
-        game.kills,
-        WAVES.reduce((sum, wave) => sum + wave.count, 0),
-    );
+    assert.deepEqual([...bossesSeen].sort(), ['boss', 'frostBoss', 'infernoBoss', 'riftBoss'].sort());
+    assert.ok(game.kills >= WAVES.reduce((sum, wave) => sum + wave.count, 0));
 });
 
 test('重新部署清空弹幕、升级、死亡状态和旧局计时', () => {
@@ -265,12 +268,15 @@ test('冲击镜头与特效有界，重开后不残留上一局的震动与闪�
 
 test('命中震屏分级，击毁白闪限频且首领强闪可覆盖普通白闪', () => {
     const { game } = createGame();
-    const enemy = game.makeEnemy('heavy', 700, 400); enemy.warning = 0;
+    const enemy = game.makeEnemy('heavy', 700, 400);
+    enemy.warning = 0;
     game.damageEnemy(enemy, 1, false, 0);
-    assert.ok(game.shake >= 10); assert.ok(game.hitstop >= 0.032);
+    assert.ok(game.shake >= 10);
+    assert.ok(game.hitstop >= 0.032);
     assert.equal(game.whiteFlash.life, 0);
     game.damageEnemy(enemy, enemy.maxHp, false, 0);
-    assert.ok(game.shake >= 22); assert.equal(game.whiteFlash.strength, 0.4);
+    assert.ok(game.shake >= 22);
+    assert.equal(game.whiteFlash.strength, 0.4);
     game.updateEffects(0.02);
     const remaining = game.whiteFlash.life;
     game.flashScreen(0.4, 0.095);
@@ -278,5 +284,7 @@ test('命中震屏分级，击毁白闪限频且首领强闪可覆盖普通白�
     game.flashScreen(0.74, 0.15);
     assert.equal(game.whiteFlash.strength, 0.74);
     assert.equal(game.whiteFlash.life, 0.15);
-    game.start(); assert.equal(game.whiteFlash.life, 0); assert.equal(game.whiteFlashCooldown, 0);
+    game.start();
+    assert.equal(game.whiteFlash.life, 0);
+    assert.equal(game.whiteFlashCooldown, 0);
 });

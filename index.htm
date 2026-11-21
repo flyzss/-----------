@@ -4,7 +4,10 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
         <meta name="theme-color" content="#111817" />
-        <meta name="description" content="余烬防线：守住水晶核心。支持单人与本地双人的装甲生存街机游戏。" />
+        <meta
+            name="description"
+            content="余烬防线：守住水晶核心。支持单人、本地双人及联机合作的二十四关装甲生存战役。"
+        />
         <title>余烬防线 EMBERLINE · 坦克大战重制</title>
         <link
             rel="icon"
@@ -23,8 +26,17 @@
             >
             <div class="header-caption">装甲生存行动 <span> / </span> CRYSTAL DEFENSE</div>
             <nav class="toolbar" aria-label="游戏设置">
+                <button id="room-button" class="tool-button" hidden title="查看联机房间">
+                    <svg viewBox="0 0 24 24"><path d="M8 8h8v8H8Z M4 4h5 M4 4v5 M20 20h-5 M20 20v-5" /></svg
+                    ><span>联机房间</span>
+                </button>
                 <!-- 横屏触屏时底部状态栏隐藏，因此提供独立暂停入口。 -->
-                <button id="landscape-pause" class="tool-button landscape-pause" disabled aria-label="暂停战斗">
+                <button
+                    id="landscape-pause"
+                    class="tool-button landscape-pause"
+                    disabled
+                    aria-label="暂停战斗"
+                >
                     <svg viewBox="0 0 24 24"><path d="M8 5v14 M16 5v14" /></svg>
                 </button>
                 <button id="sound-button" class="tool-button" aria-pressed="false" title="音效与音乐（M）">
@@ -44,13 +56,15 @@
                 </button>
             </nav>
         </header>
+        <!-- 竖屏触屏作战时的横屏建议，纯提示，不拦截任何触摸。 -->
+        <div class="rotate-hint" aria-hidden="true">横屏游玩，战场视野更大</div>
         <main class="game-shell">
             <section class="battle-column" aria-label="战场">
                 <div class="mission-strip">
                     <span
                         ><i class="status-dot"></i><b id="mission-label">灰烬工业区</b>
                         <span class="muted"> / 核心保卫战</span></span
-                    ><span id="sector-label">SECTOR 01 — 06</span>
+                    ><span id="sector-label">SECTOR 01 — 24</span>
                 </div>
                 <div id="arena" class="arena">
                     <canvas
@@ -67,15 +81,28 @@
                     <div id="welcome" class="welcome">
                         <div class="welcome-copy">
                             <h1>余烬之中，<br />守住最后的<span>光。</span></h1>
-                            <p>引擎仍在轰鸣。核心尚未熄灭。<br />驾驶你的战车，穿过六道钢铁防线。</p>
+                            <p>
+                                引擎仍在轰鸣。核心尚未熄灭。<br />驾驶你的战车，穿越四个战区，守住二十四道防线。
+                            </p>
+                            <label class="campaign-select" for="chapter-select"
+                                ><span>出击战区</span
+                                ><select id="chapter-select">
+                                    <option value="0">灰烬工业区 · 第 1 关</option>
+                                    <option value="1">霜线中继站 · 第 7 关</option>
+                                    <option value="2">熔炉禁区 · 第 13 关</option>
+                                    <option value="3">虚空裂隙 · 第 19 关</option>
+                                </select></label
+                            >
                             <div class="mode-switch" role="group" aria-label="选择游玩人数">
                                 <button class="selected" data-mode="1" aria-pressed="true">单人行动</button
-                                ><button data-mode="2" aria-pressed="false">双人协作</button>
+                                ><button data-mode="2" aria-pressed="false">同屏双人</button>
                             </div>
                             <button id="start-button" class="primary-button">
                                 启动引擎
                                 <svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg></button
-                            ><span class="start-note">无需下载 · 每局约 3–6 分钟 · 支持键鼠 / 触屏</span>
+                            ><button id="online-button" class="online-entry">
+                                联机合作 <span>创建 / 加入房间</span></button
+                            ><span class="start-note">24 道关卡 · 4 大战区 · 键鼠 / 触屏</span>
                         </div>
                         <div class="welcome-stamp">
                             <svg viewBox="0 0 48 48">
@@ -90,7 +117,8 @@
                         <div class="touch-actions">
                             <button id="touch-dash" aria-label="冲刺">冲刺</button
                             ><button id="touch-nova" aria-label="震荡爆破">震荡</button
-                            ><button id="touch-fire" aria-label="按住射击">开火</button>
+                            ><button id="touch-support" aria-label="部署炮台">炮台</button
+                            ><button id="touch-fire" aria-label="切换自动开火" aria-pressed="true">自动</button>
                         </div>
                     </div>
                     <div class="arena-corner">LIVE FIELD / <span id="field-coordinate">1280 × 800</span></div>
@@ -108,7 +136,8 @@
                     </div>
                     <div class="ability-status">
                         <span><kbd>SHIFT</kbd> 冲刺 <b id="dash-status">就绪</b></span
-                        ><span><kbd>Q</kbd> 震荡 <b id="nova-status">就绪</b></span>
+                        ><span><kbd>Q</kbd> 震荡 <b id="nova-status">就绪</b></span
+                        ><span><kbd>E</kbd> 炮台 <b id="support-status">就绪</b></span>
                     </div>
                     <button id="pause-button" class="pause-button" disabled title="暂停（Esc）">
                         <svg viewBox="0 0 20 20"><path d="M6 4v12 M14 4v12" /></svg>
@@ -118,7 +147,7 @@
             <aside class="operations" aria-label="作战信息">
                 <section class="operation-heading">
                     <h2>守住核心。<br />让希望继续。</h2>
-                    <p id="objective">击退全部六波敌军。<br />每次防守成功，重构你的战车。</p>
+                    <p id="objective">击退全部二十四波敌军。<br />每次防守成功，重构你的战车。</p>
                 </section>
                 <section class="core-section">
                     <div class="section-label">
@@ -131,9 +160,9 @@
                 <section class="wave-section">
                     <div class="section-label">
                         <h3>防线进度</h3>
-                        <span><b id="wave-value">00</b> / 06</span>
+                        <span><b id="wave-value">00</b> / 24</span>
                     </div>
-                    <div id="wave-track" class="wave-track" aria-label="六波战役进度"></div>
+                    <div id="wave-track" class="wave-track" aria-label="二十四关战役进度"></div>
                     <div class="telemetry">
                         <div><span>摧毁敌军</span><b id="kills-value">000</b></div>
                         <div><span>作战积分</span><b id="score-value">00000</b></div>

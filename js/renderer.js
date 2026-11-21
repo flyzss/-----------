@@ -1,4 +1,4 @@
-import { WORLD, WAVES } from './config.js';
+import { WORLD, WAVES, ZONES } from './config.js';
 import { clamp } from './game.js';
 
 /** Canvas 美术层：离屏绘制静态废墟，实时只重绘实体、灯光和反馈。 */
@@ -21,10 +21,12 @@ export class Renderer {
         return this.seed / 4294967296;
     }
     /** 预绘工业区地面：混凝土接缝、双车道、维修区、管线、焦土与散落碎石。 */
-    makeBackground() {
+    makeBackground(zone = this.game.zone || 0) {
+        this.zone = zone;
+        const palette = ZONES[zone];
         const c = this.background.getContext('2d');
         this.seed = 37014;
-        c.fillStyle = '#343e30';
+        c.fillStyle = palette.ground;
         c.fillRect(0, 0, 1280, 800);
         // 地表斑驳逐块绘制，避免每帧噪声计算并让坦克剪影保持清晰。
         for (let i = 0; i < 1300; i++) {
@@ -45,7 +47,7 @@ export class Renderer {
             c.fill();
         }
         c.globalAlpha = 1;
-        c.fillStyle = '#3b4339';
+        c.fillStyle = palette.road;
         c.fillRect(535, 0, 210, 800);
         c.fillRect(0, 265, 1280, 190);
         c.fillStyle = '#474c3f';
@@ -118,7 +120,7 @@ export class Renderer {
             c.stroke();
         }
         // 旧设施与警戒线给战场提供位置记忆，而不是填充无意义的装饰。
-        this.groundLabel(c, 'DEPOT 04', 220, 110, 20, '#9fa28360');
+        this.groundLabel(c, palette.subtitle, 220, 110, 20, '#9fa28360');
         this.groundLabel(c, 'KEEP CLEAR', 905, 565, 15, '#b5aa7e70');
         this.groundLabel(c, '07', 240, 725, 75, '#a2a08030');
         this.groundLabel(c, 'CORE / REACTOR', 566, 767, 13, '#a8b19799');
@@ -205,6 +207,7 @@ export class Renderer {
         const c = this.ctx,
             g = this.game,
             time = realTime / 1000;
+        if (this.zone !== g.zone) this.makeBackground(g.zone);
         c.clearRect(0, 0, 1280, 800);
         c.fillStyle = '#28372c';
         c.fillRect(0, 0, 1280, 800);
@@ -221,7 +224,9 @@ export class Renderer {
         c.drawImage(this.background, 0, 0);
         for (const w of g.wrecks) this.drawWreck(c, w);
         for (const wall of g.walls) this.drawWall(c, wall);
+        this.drawField(c, g, time);
         this.drawCore(c, g.core, time);
+        for (const turret of g.turrets) this.drawTurret(c, turret);
         for (const item of g.pickups) this.drawPickup(c, item, time);
         for (const enemy of g.enemies) this.drawTank(c, enemy, true, time);
         for (const player of g.players) if (player.hp > 0) this.drawTank(c, player, false, time);
@@ -282,9 +287,11 @@ export class Renderer {
         // 白闪覆盖完整战斗画面而不跟随震屏偏移；系统减少动态设置会同时关闭白闪与镜头摇晃。
         if (g.whiteFlash.life > 0 && !this.reduceMotion) {
             const intensity = Math.pow(g.whiteFlash.life / g.whiteFlash.maxLife, 1.6) * g.whiteFlash.strength;
-            c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
+            c.save();
+            c.setTransform(1, 0, 0, 1, 0, 0);
             c.fillStyle = `rgba(255,255,255,${intensity})`;
-            c.fillRect(0, 0, 1280, 800); c.restore();
+            c.fillRect(0, 0, 1280, 800);
+            c.restore();
         }
         if (g.state === 'playing' && g.pointer.used && !g.touchFire) this.drawReticle(c, g.pointer);
         if (g.combo >= 2 && g.state === 'playing') {
@@ -297,7 +304,7 @@ export class Renderer {
             c.fillText('连续击破', 1240, 121);
             c.textAlign = 'left';
         }
-        const boss = g.enemies.find((e) => e.type === 'boss' && !e.dead);
+        const boss = g.enemies.find((e) => e.boss && !e.dead);
         if (boss) this.drawBossBar(c, boss);
         // 核心低耐久通过边缘警示反馈，而不是持续闪烁遮挡整个战场。
         if (g.core.hp < 150 && g.state === 'playing') {
@@ -417,6 +424,144 @@ export class Renderer {
         }
         c.restore();
     }
+    /** 战场机制画在地面层：炮击倒计时可读、信标进度明确、雪与余烬只做稀疏环境纹理。 */
+    drawField(c, g, time) {
+        if (g.beacon) {
+            const b = g.beacon;
+            c.save();
+            c.translate(b.x, b.y);
+            c.strokeStyle = b.done ? '#c6efb3' : '#b5d7d8';
+            c.lineWidth = 2;
+            c.setLineDash([6, 8]);
+            c.beginPath();
+            c.arc(0, 0, 74, 0, Math.PI * 2);
+            c.stroke();
+            c.setLineDash([]);
+            c.strokeStyle = '#c7edb2';
+            c.lineWidth = 5;
+            c.beginPath();
+            c.arc(0, 0, 62, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (b.done ? 1 : b.capture / 4));
+            c.stroke();
+            c.fillStyle = b.done ? '#b9edac' : '#c6dbd2';
+            c.fillRect(-4, -16, 8, 32);
+            c.fillRect(-16, -4, 32, 8);
+            c.textAlign = 'center';
+            c.font = '12px Microsoft YaHei,sans-serif';
+            c.fillText(b.done ? '信标已接管' : `信标争夺 ${Math.floor((b.capture / 4) * 100)}%`, 0, 96);
+            c.restore();
+        }
+        for (const h of g.hazards) {
+            if (h.detonated) continue;
+            c.save();
+            c.translate(h.x, h.y);
+            c.fillStyle = `rgba(239,104,76,${0.07 + Math.sin(time * 15) * 0.025})`;
+            c.strokeStyle = '#f49373';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.arc(0, 0, h.radius, 0, Math.PI * 2);
+            c.fill();
+            c.stroke();
+            c.beginPath();
+            c.arc(0, 0, h.radius * Math.max(0, h.delay / 1.6), 0, Math.PI * 2);
+            c.stroke();
+            c.beginPath();
+            c.moveTo(-10, 0);
+            c.lineTo(10, 0);
+            c.moveTo(0, -10);
+            c.lineTo(0, 10);
+            c.stroke();
+            c.font = '700 14px Chakra,sans-serif';
+            c.textAlign = 'center';
+            c.fillStyle = '#ffd3b0';
+            c.fillText(`${Math.max(0, h.delay).toFixed(1)}s`, 0, -18);
+            c.restore();
+        }
+        // 相位门：旋转的虚线双环 + 中心漩涡，两座门颜色一致以表明互相连通。
+        for (const portal of g.portals || []) {
+            c.save();
+            c.translate(portal.x, portal.y);
+            c.fillStyle = 'rgba(176,140,255,0.13)';
+            c.beginPath();
+            c.arc(0, 0, portal.radius + 8, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = '#c9a8ff';
+            c.lineWidth = 3;
+            c.setLineDash([10, 7]);
+            c.rotate(this.reduceMotion ? 0 : time * 1.6);
+            c.beginPath();
+            c.arc(0, 0, portal.radius, 0, Math.PI * 2);
+            c.stroke();
+            c.rotate(this.reduceMotion ? 0 : -time * 3.4);
+            c.lineWidth = 2;
+            c.beginPath();
+            c.arc(0, 0, portal.radius * 0.55, 0, Math.PI * 2);
+            c.stroke();
+            c.setLineDash([]);
+            c.restore();
+            c.textAlign = 'center';
+            c.fillStyle = '#d9c6ff';
+            c.font = '12px Microsoft YaHei,sans-serif';
+            c.fillText('相位门', portal.x, portal.y + portal.radius + 22);
+            c.textAlign = 'left';
+        }
+        // 护盾：浅蓝色泡泡，透明度随剩余吸收量变化。
+        for (const p of g.players)
+            if (p.hp > 0 && p.shield > 0) {
+                c.strokeStyle = `rgba(159,216,255,${0.35 + Math.min(1, p.shield / 90) * 0.5})`;
+                c.fillStyle = 'rgba(159,216,255,0.08)';
+                c.lineWidth = 2.5;
+                c.beginPath();
+                c.arc(p.x, p.y, p.radius + 9, 0, Math.PI * 2);
+                c.fill();
+                c.stroke();
+            }
+        for (const p of g.players)
+            if (p.hp > 0 && p.overdrive > 0) {
+                c.strokeStyle = '#ffd083';
+                c.lineWidth = 2;
+                c.setLineDash([7, 5]);
+                c.beginPath();
+                c.arc(p.x, p.y, p.radius + 13, 0, Math.PI * 2);
+                c.stroke();
+                c.setLineDash([]);
+            }
+        // 环境飘落物：霜区雪花向下、熔炉余烬向上，裂隙中的紫色光尘缓慢上浮。
+        if (this.zone > 0 && !this.reduceMotion)
+            for (let i = 0; i < 35; i++) {
+                const x = (i * 173 + Math.sin(time + i) * 15) % 1280,
+                    y = (i * 97 + time * (this.zone === 1 ? 24 : this.zone === 3 ? -9 : -19) + 8000) % 800;
+                c.fillStyle = this.zone === 1 ? '#c6dfe157' : this.zone === 3 ? '#cdb2ff70' : '#ffb46b66';
+                c.fillRect(x, y, this.zone === 1 ? 2 : 1.5, this.zone === 1 ? 3 : 2);
+            }
+    }
+    /** 哨戒炮使用四脚底座与独立炮管，外形区别于可驾驶坦克。 */
+    drawTurret(c, t) {
+        c.save();
+        c.translate(t.x, t.y);
+        c.strokeStyle = '#9fb58d';
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(-17, -17);
+        c.lineTo(17, 17);
+        c.moveTo(17, -17);
+        c.lineTo(-17, 17);
+        c.stroke();
+        c.fillStyle = '#263b2c';
+        c.fillRect(-12, -12, 24, 24);
+        c.strokeStyle = '#c6dba9';
+        c.lineWidth = 1;
+        c.strokeRect(-12, -12, 24, 24);
+        c.rotate(t.angle);
+        c.fillStyle = '#c5d3a2';
+        c.fillRect(-7, -8, 19, 16);
+        c.fillStyle = '#78916c';
+        c.fillRect(8 - t.recoil * 0.3, -4, 28, 8);
+        c.fillStyle = '#16291e';
+        c.fillRect(33 - t.recoil * 0.3, -5, 5, 10);
+        c.restore();
+        c.fillStyle = '#8caa78';
+        c.fillRect(t.x - 15, t.y + 24, 30 * Math.max(0, t.life / 12), 2);
+    }
     /** 废墟混凝土有顶面、倒角与右下投影，损坏后裂纹加深，钢墙保留独立材质。 */
     drawWall(c, w) {
         if (w.hp <= 0) {
@@ -428,7 +573,7 @@ export class Renderer {
         const { x, y } = w;
         c.fillStyle = '#101c1b88';
         c.fillRect(x + 7, y + 9, 40, 40);
-        c.fillStyle = w.steel ? '#394942' : '#6a7057';
+        c.fillStyle = w.steel ? '#394942' : ZONES[this.zone].cover;
         c.fillRect(x, y, 39, 39);
         c.fillStyle = w.steel ? '#667168' : '#92927a';
         c.fillRect(x, y, 39, 4);
@@ -687,11 +832,32 @@ export class Renderer {
                 c.arc(x, y, r + 13, 0, Math.PI * 2);
                 c.stroke();
             }
-        } else if (tank.hp < tank.maxHp && tank.type !== 'boss') {
+        } else if (tank.hp < tank.maxHp && !tank.boss) {
             c.fillStyle = '#19291c';
             c.fillRect(x - r, y - r - 11, r * 2, 3);
             c.fillStyle = '#e5aa75';
             c.fillRect(x - r, y - r - 11, r * 2 * Math.max(0, tank.hp / tank.maxHp), 3);
+        }
+        // 盾卫：车头前方的弧形相位护盾，提示玩家从侧后方攻击。
+        if (enemy && tank.shield) {
+            c.strokeStyle = '#b9c4ffcc';
+            c.lineWidth = 4;
+            c.beginPath();
+            c.arc(x, y, r + 8, tank.angle - 1.05, tank.angle + 1.05);
+            c.stroke();
+        }
+        // 悬赏精英：金色脉动光环与「悬赏」标签。
+        if (enemy && tank.bounty) {
+            c.strokeStyle = `rgba(255,211,110,${0.55 + Math.sin(time * 6) * 0.3})`;
+            c.lineWidth = 3;
+            c.beginPath();
+            c.arc(x, y, r + 12, 0, Math.PI * 2);
+            c.stroke();
+            c.textAlign = 'center';
+            c.fillStyle = '#ffd36e';
+            c.font = '700 12px Microsoft YaHei,sans-serif';
+            c.fillText('悬赏', x, y - r - 18);
+            c.textAlign = 'left';
         }
         if (enemy && tank.type === 'sniper' && tank.fireCd < 0.65) {
             c.strokeStyle = '#f7b38a66';
@@ -720,7 +886,7 @@ export class Renderer {
         c.lineCap = 'round';
         for (const b of bullets) {
             const length = b.enemy ? 14 : 24,
-                color = b.enemy ? '#f7a466' : '#e6f1ae';
+                color = b.tint || (b.enemy ? '#f7a466' : '#e6f1ae');
             c.strokeStyle = b.enemy ? '#f09b5144' : '#dceaa43d';
             c.lineWidth = 9;
             c.beginPath();
@@ -743,14 +909,39 @@ export class Renderer {
         c.save();
         c.translate(p.x, p.y + bob);
         c.rotate(Math.PI / 4);
-        c.fillStyle = '#243d2c';
+        const shield = p.kind === 'shield';
+        c.fillStyle = p.kind === 'overdrive' ? '#4d3924' : shield ? '#22344a' : '#243d2c';
         c.fillRect(-12, -12, 24, 24);
-        c.strokeStyle = '#bfdba4';
+        c.strokeStyle = p.kind === 'overdrive' ? '#f7b65f' : shield ? '#9fd8ff' : '#bfdba4';
         c.strokeRect(-12, -12, 24, 24);
         c.rotate(-Math.PI / 4);
-        c.fillStyle = '#cbe8ad';
-        c.fillRect(-7, -2, 14, 4);
-        c.fillRect(-2, -7, 4, 14);
+        c.fillStyle = p.kind === 'overdrive' ? '#ffd28a' : shield ? '#bfe6ff' : '#cbe8ad';
+        if (shield) {
+            // 护盾模块用盾形轮廓，与维修十字、超频闪电在形状上区分。
+            c.beginPath();
+            c.moveTo(0, -9);
+            c.lineTo(8, -5);
+            c.lineTo(6, 4);
+            c.lineTo(0, 9);
+            c.lineTo(-6, 4);
+            c.lineTo(-8, -5);
+            c.closePath();
+            c.fill();
+        } else if (p.kind === 'overdrive') {
+            // 电池用闪电轮廓，维修用十字，避免只靠橙绿颜色区分拾取效果。
+            c.beginPath();
+            c.moveTo(2, -9);
+            c.lineTo(-7, 2);
+            c.lineTo(-1, 2);
+            c.lineTo(-3, 10);
+            c.lineTo(7, -2);
+            c.lineTo(1, -2);
+            c.closePath();
+            c.fill();
+        } else {
+            c.fillRect(-7, -2, 14, 4);
+            c.fillRect(-2, -7, 4, 14);
+        }
         c.restore();
     }
     /** 坦克残骸逐渐褪色，记录战斗发生的位置并限制最大数量。 */
@@ -792,7 +983,7 @@ export class Renderer {
         c.textAlign = 'center';
         c.fillStyle = '#eac49a';
         c.font = '13px Microsoft YaHei,sans-serif';
-        c.fillText('灰烬之王 · 重装攻城平台', 640, 43);
+        c.fillText(`${boss.name} · 重装攻城平台`, 640, 43);
         c.fillStyle = '#4a4935';
         c.fillRect(395, 55, 490, 5);
         c.fillStyle = boss.hp < boss.maxHp / 2 ? '#f79867' : '#c6a475';
@@ -834,7 +1025,7 @@ export class Renderer {
         g.enemies.forEach((e) => {
             if (!e.dead) {
                 c.beginPath();
-                c.arc(e.x, e.y, e.type === 'boss' ? 22 : 12, 0, Math.PI * 2);
+                c.arc(e.x, e.y, e.boss ? 22 : 12, 0, Math.PI * 2);
                 c.fill();
             }
         });

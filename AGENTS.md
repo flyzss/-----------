@@ -2,41 +2,43 @@
 
 ## Project Structure & Module Organization
 
-This repository contains **余烬防线 / EMBERLINE**, a static Canvas tank-defense game, plus its preserved original version.
+**余烬防线 / EMBERLINE** supports offline solo/local co-op and server-authoritative online co-op across a 24-stage campaign.
 
-- `index.htm` and `main.css` define the new interface and responsive layouts.
+- `index.htm` / `main.css` contain the responsive interface.
 - `js/main.js` connects inputs, dialogs, HUD, and the animation loop.
-- `js/game.js` implements the simulation: movement, collision, AI, waves, upgrades, and lifecycle.
-- `js/renderer.js` draws procedural terrain, vehicles, effects, and radar; `js/sound.js` mixes Web Audio sound and music; `js/synthesis.js` generates cached PCM effects.
-- `js/config.js` defines enemies, waves, upgrades, and SVG icons.
-- `tests/*.test.mjs` exercise gameplay rules and sound synthesis without a browser.
-- `legacy.htm`, `legacy.css`, `js/legacy-main.js`, the original entity modules, `image/`, and `audio/` serve the original game.
-- `fonts/` contains the self-hosted display font and its license. `README.md`, `PRODUCT.md`, and `DESIGN.md` explain usage and design.
+- `js/game.js` is the shared simulation; keep it independent of browser APIs so Node and offline play use identical rules.
+- `js/config.js` defines zones, waves, enemies, events, and upgrades.
+- `js/renderer.js`, `js/sound.js`, and `js/synthesis.js` handle procedural graphics and audio.
+- `js/network.js` manages browser connections and interpolation; `js/protocol.js` validates input and generates snapshots.
+- `server/index.js` serves permitted assets and WebSocket connections; `server/rooms.js` owns rooms and battle state.
+- `tests/*.test.mjs` cover gameplay, synthesis, and real WebSocket integration.
+- `legacy.htm`, `legacy.css`, original entity modules, `image/`, and `audio/` retain the old game. `fonts/` contains the display font and license.
 
 ## Build, Test, and Development Commands
 
-Run from the repository root:
+Run from the repository root with Node.js 22+:
 
 ```powershell
-py -m http.server 8000 --bind 127.0.0.1
-node --test tests/game.test.mjs tests/synthesis.test.mjs
+npm install
+npm start
+npm test
 git diff --check
 ```
 
-The first command requires Python 3 and serves `http://127.0.0.1:8000/index.htm`; stop with Ctrl+C. HTTP is required for ES modules. The test command requires Node.js 22 or newer. No dependency installation, compilation, or configured linter is required.
+`npm start` serves the game and rooms at `http://localhost:8080/index.htm`; `HOST` and `PORT` override the listener. Share the printed LAN address with another device. `npm test` uses Node's built-in runner, including two-client integration tests. No compilation or configured linter is required.
+
+For offline modes only, `py -m http.server 8000 --bind 127.0.0.1` serves the static game; Python does not provide rooms. ES modules require HTTP.
 
 ## Coding Style & Naming Conventions
 
-Use four-space indentation, camelCase for new variables and methods, and explicit `.js` extensions in ES module imports. Keep simulation logic independent of DOM and rendering. Use seconds for simulation timers and logical battlefield coordinates for collision and inputs.
-
-All new or modified code must have complete Chinese comments explaining purpose, parameters, non-obvious logic, and gameplay rules. Preserve Chinese interface text and UTF-8 encoding. No formatter is configured; match nearby formatting. Treat `js/jquery.min.js` as vendored code. Preserve numeric legacy asset paths and the font license.
+Use four-space indentation, camelCase, and explicit `.js` ES module imports. Measure simulation timers in seconds and collisions in logical battlefield coordinates. All new or modified code must include complete Chinese comments explaining purpose, parameters, non-obvious logic, and gameplay rules. Preserve Chinese text, UTF-8, legacy numeric asset paths, and font licensing. Match nearby formatting; no formatter is configured.
 
 ## Testing Guidelines
 
-Use Node's built-in test runner; no coverage threshold is configured. Name files `*.test.mjs` and describe observable behavior in test names. Test collision, cooldowns, pause, progression, and lifecycle changes through the real simulation.
+Name tests `*.test.mjs` and describe observable behavior. Test authoritative rules, bounded inputs, reconnect lifecycle, and synchronized upgrades through actual production code. No coverage threshold is configured.
 
-Browser-check changed flows: solo/co-op controls, touch input, audio activation/muting, pause/resume, upgrades, restart, and victory/defeat. Inspect console/network errors and desktop/mobile layouts. Record browser and scenarios tested; simulation tests do not establish sound quality or combat feel.
+Browser-check solo/co-op, separate online clients, reload recovery, touch, audio, pause, upgrades, and viewport overflow. Do not infer public-network or device behavior from localhost tests. Keep tokens private to their player; never serve server files, repository metadata, or tests as game assets.
 
 ## Commit & Pull Request Guidelines
 
-History contains many `1` messages and occasional Chinese feature descriptions; no consistent convention exists. Prefer descriptive messages such as `修复冲刺穿透掩体`. Keep commits focused. PRs should explain gameplay changes, link issues when available, list validation, and include screenshots or recordings for visual changes.
+History has no consistent convention. Prefer descriptive messages such as `新增联机房间与断线恢复`, with focused commits. PRs should explain gameplay changes, link relevant issues, list validation and network limits, and include screenshots or recordings for visible changes.

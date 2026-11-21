@@ -1,0 +1,31 @@
+# 放进 games.frp.q-auto-parts.com 已有的 server 块，不另建站点或覆盖其他应用。
+# Windows 上 Node 仍运行在 127.0.0.1:8080；NGINX 负责剥离 /tank/ 前缀。
+location = /tank {
+    # 固定公网 HTTPS 入口，兼容 FRP 在外层终止 TLS 的情况，并保留房间查询参数。
+    return 301 https://games.frp.q-auto-parts.com/tank/$is_args$args;
+}
+
+location = /tank/ws {
+    # 后端只接收 /ws，不能把 /tank/ws 原样传给 Node。
+    proxy_pass http://127.0.0.1:8080/ws;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    # 对应实际公网来源，避免外层代理改写 Host 后导致 Origin 校验失败。
+    proxy_set_header Host games.frp.q-auto-parts.com;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+    proxy_buffering off;
+}
+
+location ^~ /tank/ {
+    # 末尾的 / 必须保留：将 /tank/js/main.js 转成后端 /js/main.js。
+    proxy_pass http://127.0.0.1:8080/;
+    proxy_http_version 1.1;
+    proxy_set_header Host games.frp.q-auto-parts.com;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Connection "";
+}

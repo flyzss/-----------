@@ -8,19 +8,23 @@ web
 
 ## Users and Purpose
 
-A locally playable Canvas tank arcade game. The repository owner explicitly delegates gameplay, art, sound and implementation decisions for a full upgrade. Retain tanks and crystal defense as the recognizable core; support solo and local two-player play.
+A locally playable Canvas tank-defense game, now expanded at the repository owner's request to support online cooperation, more mechanics and more levels. The owner delegates implementation and design while preserving the current visual identity and strong hit feedback.
 
 ## Stack
 
-Existing static HTML, CSS and native JavaScript modules. Continue without a build pipeline or runtime dependencies. New game code carries complete Chinese comments.
+Static HTML/CSS and native JavaScript modules for the browser. Node.js 22+ and ws provide the online service. The same simulation runs offline and on the server. New code carries complete Chinese comments.
 
 ## Capabilities and Constraints
 
-Deliver an actual playable campaign, combat feedback, progression, sound, pause/restart and responsive controls. Original source and assets remain available through a legacy entry point. No network connection should be needed to play once served locally.
+- Solo, same-screen two-player and two-client online co-op.
+- Eighteen stages across three selectable zones, three bosses, eleven upgrades, temporary sentries, bombardment, overdrive and beacon capture.
+- Server-authoritative rooms, readiness, shared pause, upgrade votes, per-tab recovery credentials and one-minute reconnect grace.
+- LAN play through the same reachable server URL; public-network play requires a deployed reachable service. No external deployment is implied by local verification.
+- Static Python serving remains available for offline modes. Original game remains at legacy.htm.
 
 ## Product Principles
 
-- Start a match without configuration or account creation.
-- Make projectiles, damage and threats readable during combat.
-- Reward movement and meaningful upgrades.
-- Keep all essential controls discoverable inside the game.
+- Start a match without account creation.
+- Keep both clients in one authoritative battle.
+- Preserve readable combat and explicit recovery paths.
+- Do not confuse localhost verification with real-device, WAN latency or subjective feel validation.

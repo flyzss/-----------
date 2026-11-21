@@ -1,0 +1,40 @@
+# HTTPS 正式配置：填写真实域名及证书路径，与 HTTP 完整示例二选一。
+server {
+    listen 80;
+    server_name tank.example.com;
+    # 已有证书续期验证路径时，应保留原有验证配置。
+    return 301 https://tank.example.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name tank.example.com;
+    # Windows 下 NGINX 路径使用正斜杠。
+    ssl_certificate D:/nginx/cert/tank.pem;
+    ssl_certificate_key D:/nginx/cert/tank.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # 浏览器自动使用 wss，NGINX 向本机 Node 转发联机连接。
+    location = /ws {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+        proxy_buffering off;
+    }
+
+    # 页面、接口和资源保持同源，并由同一个 Node 进程提供。
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Connection "";
+    }
+}
